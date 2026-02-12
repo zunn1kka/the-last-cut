@@ -1,0 +1,366 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Genre {
+  id String @id @default(uuid())
+
+  name String @unique @db.VarChar(50)
+  slug String @unique @db.VarChar(50)
+
+  contents ContentGenre[]
+
+  @@map("genres")
+}
+
+model User {
+  id String @id @default(uuid())
+
+  username     String   @unique @db.VarChar(50)
+  email        String   @unique @db.VarChar(100)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  telegramId   String?  @unique @map("telegram_id") @db.VarChar(50)
+  avatarUrl    String?  @map("avatar_url") @db.VarChar(255)
+  bio          String?
+  role         UserRole @default(USER)
+
+  emailVerified       Boolean   @default(false) @map("email_verified")
+  emailVerifyToken    String?   @unique @map("email_verify_token")
+  emailTokenExpiresAt DateTime? @map("email_token_expires_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  comments            Comment[]
+  commentRatings      CommentRating[]
+  commentReports      CommentReport[]
+  bookmarks           Bookmark[]
+  userWatchStatuses   UserWatchStatus[]
+  watchHistory        WatchHistory[]
+  friendshipsAsUser   Friendship[]      @relation("UserFriendships")
+  friendshipsAsFriend Friendship[]      @relation("FriendFriendships")
+  notifications       Notification[]
+  contentRatings      ContentRating[]
+
+  @@index([email])
+  @@index([username])
+  @@map("users")
+}
+
+model Content {
+  id String @id @default(uuid())
+
+  title           String      @db.VarChar(100)
+  originalTitle   String?     @map("original_title") @db.VarChar(255)
+  description     String
+  releaseYear     Int?        @map("release_year")
+  posterUrl       String      @map("poster_url")
+  backdropUrl     String?     @map("backdrop_url") @db.VarChar(255)
+  imdbRating      Decimal?    @map("imdb_rating") @db.Decimal(3, 1)
+  kinopoiskRating Decimal?    @map("kinopoisk_rating") @db.Decimal(3, 1)
+  siteRating      Decimal?    @map("site_rating") @db.Decimal(3, 1)
+  ageRating       String?     @map("age_rating") @db.VarChar(10)
+  contentType     ContentType @map("content_type")
+
+  genres            ContentGenre[]
+  persons           ContentPerson[]
+  comments          Comment[]
+  bookmarks         Bookmark[]
+  userWatchStatuses UserWatchStatus[]
+  watchHistory      WatchHistory[]
+  contentRatings    ContentRating[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  movie     Movie?
+  series    Series?
+
+  @@map("contents")
+}
+
+model Movie {
+  id String @id @default(uuid())
+
+  duration Int?
+  budget   BigInt?
+
+  contentId String  @unique @map("content_id")
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("movies")
+}
+
+model Series {
+  id String @id @default(uuid())
+
+  seasonsCount  Int?      @map("seasons_count")
+  episodesCount Int?      @map("episodes_count")
+  episodes      Episode[]
+  contentId     String    @unique @map("content_id")
+  content       Content   @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@map("series")
+}
+
+model Episode {
+  id       String @id @default(uuid())
+  seriesId String @map("series_id")
+  series   Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  seasonNumber  Int       @map("season_number")
+  episodeNumber Int       @map("episode_number")
+  title         String
+  duration      Int
+  description   String?
+  airDate       DateTime? @map("air_date")
+
+  @@unique([seriesId, seasonNumber, episodeNumber])
+  @@map("episodes")
+}
+
+model ContentRating {
+  userId    String @map("user_id")
+  contentId String @map("content_id")
+
+  rating    Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, contentId])
+  @@index([contentId, rating])
+  @@map("content_ratings")
+}
+
+model Comment {
+  id String @id @default(uuid())
+
+  userId    String  @map("user_id")
+  contentId String  @map("content_id")
+  parentId  String? @map("parent_id")
+  text      String
+  rating    Int?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?        @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[]       @relation("CommentReplies")
+  ratings CommentRating[]
+  reports CommentReport[]
+  content Content         @relation(fields: [contentId], references: [id])
+
+  @@index([contentId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("comments")
+}
+
+model CommentReport {
+  id String @id @default(uuid())
+
+  commentId String       @map("comment_id")
+  userId    String       @map("user_id")
+  reason    String
+  status    ReportStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comment_reports")
+}
+
+model CommentRating {
+  userId     String  @map("user_id")
+  commentId  String  @map("comment_id")
+  isPositive Boolean @map("is_positive")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+  @@map("comment_ratings")
+}
+
+model UserWatchStatus {
+  userId    String @map("user_id")
+  contentId String @map("content_id")
+
+  status   WatchStatus
+  progress Int         @default(0)
+
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, contentId])
+  @@map("user_watch_statuses")
+}
+
+model Person {
+  id String @id @default(uuid())
+
+  fullname  String    @map("full_name") @db.VarChar(120)
+  photoUrl  String?   @map("photo_url") @db.VarChar(255)
+  biography String?
+  birthDate DateTime? @map("birth_date")
+  deathDate DateTime? @map("death_date")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  contentPersons ContentPerson[]
+
+  @@map("persons")
+}
+
+model Friendship {
+  userId   String @map("user_id")
+  friendId String @map("friend_id")
+
+  status FriendshipStatus
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@id([userId, friendId])
+  @@map("friendships")
+}
+
+model Bookmark {
+  userId    String  @map("user_id")
+  contentId String  @map("content_id")
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   Content @relation(fields: [contentId], references: [id])
+
+  @@id([userId, contentId])
+  @@map("bookmarks")
+}
+
+model WatchHistory {
+  id String @id @default(uuid())
+
+  userId          String   @map("user_id")
+  contentId       String   @map("content_id")
+  watchedAt       DateTime @default(now()) @map("watched_at")
+  durationWatched Int?     @map("duration_watched")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id])
+
+  @@index([userId])
+  @@index([watchedAt])
+  @@map("watch_history")
+}
+
+model Notification {
+  id String @id @default(uuid())
+
+  userId  String           @map("user_id")
+  type    NotificationType
+  title   String           @db.VarChar(255)
+  message String?
+  data    Json?
+  isRead  Boolean          @default(false) @map("is_read")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model ContentGenre {
+  contentId String @map("content_id")
+  genreId   String @map("genre_id")
+
+  genre   Genre   @relation(fields: [genreId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@id([contentId, genreId])
+  @@map("content_genres")
+}
+
+model ContentPerson {
+  id String @id @default(uuid())
+
+  personId   String  @map("person_id")
+  contentId  String  @map("content_id")
+  roleId     String  @map("role_id")
+  roleName   String? @map("role_name") @db.VarChar(100)
+  importance Int     @default(1)
+
+  person  Person     @relation(fields: [personId], references: [id], onDelete: Cascade)
+  role    PersonRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  content Content    @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, personId, roleId])
+  @@map("content_persons")
+}
+
+model PersonRole {
+  id String @id @default(uuid())
+
+  name String @unique @db.VarChar(40)
+
+  contentPersons ContentPerson[]
+
+  @@map("person_roles")
+}
+
+enum UserRole {
+  ADMIN     @map("admin")
+  USER      @map("user")
+  MODERATOR @map("moderator")
+}
+
+enum WatchStatus {
+  PLANNED   @map("planned")
+  WATCHING  @map("watching")
+  COMPLETED @map("completed")
+  DROPPED   @map("dropped")
+}
+
+enum ReportStatus {
+  PENDING  @map("pending")
+  RESOLVED @map("resolved")
+  REJECTED @map("rejected")
+}
+
+enum FriendshipStatus {
+  PENDING  @map("pending")
+  ACCEPTED @map("accepted")
+  REJECTED @map("rejected")
+  BLOCKED  @map("blocked")
+}
+
+enum ContentType {
+  MOVIE
+  SERIES
+}
+
+enum NotificationType {
+  COMMENT_REPLY
+  COMMENT_LIKE
+  FRIEND_REQUEST
+  FRIEND_ACCEPTED
+  MOVIE_UPDATE
+  SYSTEM
+}
