@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
-import type { JwtPayload } from '../interfaces/jwt.interface';
 
+// auth/strategies/jwt.strategy.ts
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -15,10 +15,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
-      algorithms: ['HS256'],
     });
   }
-  async validate(payload: JwtPayload) {
-    return await this.authService.validate(payload.id);
+
+  async validate(payload: any) {
+    const userId = payload.id || payload.sub;
+
+    if (!userId) {
+      throw new UnauthorizedException('Неверный формат токена');
+    }
+
+    const user = await this.authService.validate(userId);
+
+    return user;
   }
 }

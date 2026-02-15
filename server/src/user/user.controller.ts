@@ -10,7 +10,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Authorization } from 'src/auth/decorators/authorization.decorator';
 import { Authorized } from 'src/auth/decorators/authorized.decorator';
 import { DeleteAccountDto } from './dto/delete-account.dto';
@@ -19,8 +19,9 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserService } from './user.service';
 
-@Controller('users')
+@ApiTags('users')
 @ApiBearerAuth('JWT-auth')
+@Controller('users')
 @Authorization()
 export class UserController {
   constructor(private readonly userService: UserService) {}

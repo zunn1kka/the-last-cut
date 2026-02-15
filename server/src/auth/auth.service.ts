@@ -222,6 +222,16 @@ export class AuthService {
   async validate(id: string) {
     const user = await this.prismaService.user.findUnique({
       where: { id },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        role: true,
+        emailVerified: true,
+        telegramId: true,
+        avatarUrl: true,
+        bio: true,
+      },
     });
     if (!user) {
       throw new NotFoundException('Пользователь не найден');
@@ -280,7 +290,7 @@ export class AuthService {
     role: UserRole;
     emailVerified: boolean;
   }) {
-    const accessPayload: JwtPayload = {
+    const payload: JwtPayload = {
       id: user.id,
       email: user.email,
       username: user.username,
@@ -288,15 +298,13 @@ export class AuthService {
       emailVerified: user.emailVerified,
     };
 
-    const refreshPayload = { sub: user.id };
-
     const accessTokenExpiresIn = parseJwtTtl(this.JWT_ACC_TOKEN_TTL);
     const refreshTokenExpiresIn = parseJwtTtl(this.JWT_REFRESH_TOKEN_TTL);
 
-    const accessToken = this.jwtService.sign(accessPayload, {
+    const accessToken = this.jwtService.sign(payload, {
       expiresIn: accessTokenExpiresIn,
     });
-    const refreshToken = this.jwtService.sign(refreshPayload, {
+    const refreshToken = this.jwtService.sign(payload, {
       expiresIn: refreshTokenExpiresIn,
     });
 

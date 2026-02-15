@@ -79,27 +79,27 @@ export class PersonController {
   }
 
   @ApiOperation({
-    summary: 'Получить всех персон фильма',
+    summary: 'Получить всех персон контента',
     description:
-      'Возвращает всех персон (актеров, режиссеров и т.д.), связанных с указанным фильмом.',
+      'Возвращает всех персон (актеров, режиссеров и т.д.), связанных с указанным контентом.',
   })
   @ApiParam({
-    name: 'movieId',
-    description: 'UUID идентификатор фильма',
+    name: 'contentId',
+    description: 'UUID идентификатор контента',
     example: '550e8400-e29b-41d4-a716-446655440001',
   })
   @ApiOkResponse({
     description: 'Персоны фильма успешно получены',
   })
   @ApiNotFoundResponse({
-    description: 'Фильм с указанным ID не найден',
+    description: 'Контент с указанным ID не найден',
   })
   @ApiBadRequestResponse({
     description: 'Невалидный UUID идентификатор',
   })
-  @Get('movie/:movieId')
-  async findAllInMovie(@Param('movieId') movieId: string) {
-    return await this.personService.findAllInMovie(movieId);
+  @Get('content/:contentId')
+  async findAllInMovie(@Param('contentId') contentId: string) {
+    return await this.personService.findAllInMovie(contentId);
   }
 
   @Get('search')

@@ -1,9 +1,8 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsArray,
   IsBoolean,
   IsNumber,
   IsOptional,
-  IsString,
   Max,
   Min,
   ValidateIf,
@@ -11,27 +10,33 @@ import {
 import { CreateContentDto } from 'src/content/dto/create-content.dto';
 
 export class CreateSeriesDto extends CreateContentDto {
-  @IsNumber()
-  @Min(1)
-  @Max(50)
+  @ApiProperty({
+    description: 'Количество сезонов',
+    example: 3,
+    minimum: 1,
+    maximum: 50,
+  })
+  @IsNumber({}, { message: 'Количество сезонов должно быть числом' })
+  @Min(1, { message: 'Количество сезонов должно быть минимум 1' })
+  @Max(50, { message: 'Количество сезонов не должно превышать 50' })
   @ValidateIf((o) => o.contentType === 'SERIES')
   seasonsCount: number;
 
-  @IsNumber()
-  @Min(0)
+  @ApiPropertyOptional({
+    description: 'Общее количество эпизодов',
+    example: 24,
+    minimum: 0,
+  })
+  @IsNumber({}, { message: 'Количество эпизодов должно быть числом' })
+  @Min(0, { message: 'Количество эпизодов не может быть отрицательным' })
   @IsOptional()
   episodesCount?: number;
 
-  @IsBoolean()
+  @ApiPropertyOptional({
+    description: 'Завершен ли сериал',
+    example: true,
+  })
+  @IsBoolean({ message: 'Флаг завершенности должен быть булевым значением' })
   @IsOptional()
   isCompleted?: boolean;
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  creatorIds?: string[];
-
-  @IsString()
-  @IsOptional()
-  network?: string;
 }

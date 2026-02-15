@@ -37,28 +37,28 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
-  @Get(':movieId')
+  @Get(':contentId')
   @ApiOperation({
-    summary: 'Получить комментарии к фильму',
+    summary: 'Получить комментарии к контенту',
     description:
-      'Возвращает все комментарии к указанному фильму с пагинацией и сортировкой по дате.',
+      'Возвращает все комментарии к указанному контенту с пагинацией и сортировкой по дате.',
   })
   @ApiParam({
-    name: 'movieId',
-    description: 'UUID идентификатор фильма',
+    name: 'contentId',
+    description: 'UUID идентификатор контента',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @ApiOkResponse({
     description: 'Комментарии успешно получены',
   })
   @ApiBadRequestResponse({
-    description: 'Невалидный UUID фильма или параметры пагинации',
+    description: 'Невалидный UUID контента или параметры пагинации',
   })
   @ApiNotFoundResponse({
-    description: 'Фильм не найден',
+    description: 'Контент не найден',
   })
-  async findAllInMovie(@Param('movieId') movieId: string) {
-    return await this.commentService.findAllInMovie(movieId);
+  async findAllInMovie(@Param('contentId') contentId: string) {
+    return await this.commentService.findAllInMovie(contentId);
   }
 
   @Get(':commentId/replies')
@@ -84,7 +84,7 @@ export class CommentController {
     return await this.commentService.findReplies(commentId);
   }
 
-  @Post(':movieId')
+  @Post(':contentId')
   @EmailVerified()
   @ApiOperation({
     summary: 'Создать комментарий',
@@ -92,8 +92,8 @@ export class CommentController {
       'Создает новый комментарий к фильму. Требуется подтвержденный email.',
   })
   @ApiParam({
-    name: 'movieId',
-    description: 'UUID идентификатор фильма',
+    name: 'contentId',
+    description: 'UUID идентификатор контента',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @ApiBody({
@@ -113,17 +113,17 @@ export class CommentController {
     description: 'Невалидные данные или UUID фильма',
   })
   @ApiNotFoundResponse({
-    description: 'Фильм не найден',
+    description: 'Контент не найден',
   })
   @ApiConflictResponse({
-    description: 'Пользователь уже оставлял комментарий к этому фильму',
+    description: 'Пользователь уже оставлял комментарий к этому контенту',
   })
   async createComment(
-    @Param('movieId') movieId: string,
+    @Param('contentId') contentId: string,
     @Authorized('id') userId: string,
     @Body() dto: CreateCommentDto,
   ) {
-    return await this.commentService.create(userId, movieId, dto);
+    return await this.commentService.create(userId, contentId, dto);
   }
 
   @Put(':commentId')

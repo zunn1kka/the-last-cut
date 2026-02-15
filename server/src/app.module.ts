@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { JwtGuard } from './auth/guards/auth.guard';
 import { MailModule } from './auth/mail/mail.module';
+import { BookmarksModule } from './bookmarks/bookmarks.module';
 import { CommentModule } from './comment/comment.module';
 import { ContentModule } from './content/content.module';
 import { GenreModule } from './genre/genre.module';
@@ -28,6 +29,7 @@ import { UserModule } from './user/user.module';
     PersonRoleModule,
     MailModule,
     ContentModule,
+    BookmarksModule,
   ],
   controllers: [AppController],
   providers: [
