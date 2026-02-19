@@ -14,6 +14,7 @@ import { PersonRoleModule } from './person-role/person-role.module';
 import { PersonModule } from './person/person.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
+import { RatingsModule } from './ratings/ratings.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UserModule } from './user/user.module';
     MailModule,
     ContentModule,
     BookmarksModule,
+    RatingsModule,
   ],
   controllers: [AppController],
   providers: [
