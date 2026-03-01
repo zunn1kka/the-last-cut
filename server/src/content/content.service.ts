@@ -34,17 +34,4 @@ export class ContentService {
     }
     return content;
   }
-
-  async delete(contentId: string) {
-    const content = await this.prismaService.content.findUnique({
-      where: { id: contentId },
-    });
-    if (!content) {
-      throw new NotFoundException('Такого фильма или сериала нет');
-    }
-
-    return await this.prismaService.content.delete({
-      where: { id: contentId },
-    });
-  }
 }
