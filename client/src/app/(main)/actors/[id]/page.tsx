@@ -14,7 +14,7 @@ interface Person {
 	birthDate: string | null
 	deathDate: string | null
 	biography: string | null
-	createdAt: string
+	createdAt?: string
 }
 
 interface ContentPerson {
