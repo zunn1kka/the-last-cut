@@ -85,7 +85,6 @@ export default function CollectionPage() {
 	return (
 		<div className='bg-custom-darker min-h-screen py-12'>
 			<div className='container mx-auto px-4'>
-				{/* Хлебные крошки */}
 				<div className='mb-6 text-sm text-gray-500'>
 					<Link href='/collections' className='hover:text-blue-400'>
 						Мои сборники
@@ -143,7 +142,7 @@ export default function CollectionPage() {
 					<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4'>
 						{collection.items.map(item => (
 							<div key={item.id} className='relative group'>
-								<ContentCard content={item.content} />
+								<ContentCard content={item.content as any} />
 								<button
 									onClick={() => handleRemoveItem(item.contentId)}
 									className='absolute top-2 right-2 bg-red-600 hover:bg-red-700 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10'
