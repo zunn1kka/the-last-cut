@@ -1,20 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { FileService } from 'src/file/file.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FindAllContentDto } from './dto/find-all-content.dto';
-import { MovieService } from './movie/movie.service';
-import { SeriesService } from './series/series.service';
 
 @Injectable()
 export class ContentService {
-  constructor(
-    private readonly prismaService: PrismaService,
-    private readonly movieService: MovieService,
-    private readonly seriesService: SeriesService,
-    private readonly fileService: FileService,
-  ) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async findAll(dto: FindAllContentDto) {
+    console.log('DBurl ', process.env.POSTGRES_URL);
     const {
       page = 1,
       limit = 20,

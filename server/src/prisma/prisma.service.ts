@@ -5,7 +5,7 @@ import { PrismaClient } from 'generated/prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient {
   constructor() {
-    const connectionString = process.env.POSTGRES_URL as string;
+    const connectionString = process.env.DATABASE_URL as string;
 
     console.log(connectionString);
 
