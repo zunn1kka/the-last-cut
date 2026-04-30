@@ -10,6 +10,10 @@ import { setupSwagger } from './lib/common/utils/swagger.util';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
+
+  const databaseUrl = configService.get('POSTGRES_URL');
+  console.log(databaseUrl);
 
   const config = app.get(ConfigService);
 
