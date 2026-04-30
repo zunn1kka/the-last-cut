@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
-  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -37,18 +36,6 @@ export class RegisterDto {
   @IsEmail({}, { message: 'Некорректный формат электронной почты' })
   @IsNotEmpty({ message: 'Электронная почта обязательна для заполнения' })
   email: string;
-
-  @ApiProperty({
-    description: 'ID телеграмма пользователя',
-    example: '@sjso2',
-  })
-  @IsString({ message: 'Telegram ID должен быть строкой' })
-  @IsOptional()
-  @Matches(/^@[a-zA-Z0-9_]{5,32}$/, {
-    message:
-      'Telegram ID должен начинаться с @ и содержать 5-32 символа (буквы, цифры, подчеркивание)',
-  })
-  telegramId?: string;
 
   @ApiProperty({
     description: 'Пароль пользователя',

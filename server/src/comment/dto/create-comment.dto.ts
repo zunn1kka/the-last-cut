@@ -26,6 +26,7 @@ export class CreateCommentDto {
     nullable: true,
   })
   @IsNumber({}, { message: 'Рейтинг должен быть числом' })
+  @IsOptional()
   rating: number;
 
   @ApiPropertyOptional({

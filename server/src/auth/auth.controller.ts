@@ -21,11 +21,14 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiQuery,
+  ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
+import { Authorization } from './decorators/authorization.decorator';
+import { Authorized } from './decorators/authorized.decorator';
 import { AuthDto } from './dto/auth.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -63,6 +66,17 @@ export class AuthController {
     avatar: Express.Multer.File,
   ) {
     return await this.authService.register(res, dto, avatar);
+  }
+
+  @Get('me')
+  @Authorization()
+  @ApiOperation({ summary: 'Получить текущего авторизованного пользователя' })
+  @ApiResponse({ status: 200, description: 'Данные пользователя' })
+  async getMe(@Authorized('id') userId: string) {
+    console.log('🔍 getMe вызван для userId:', userId);
+    const user = await this.authService.validate(userId);
+    console.log('👤 Найден пользователь:', user);
+    return user;
   }
 
   @Post('login')

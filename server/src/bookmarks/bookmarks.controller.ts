@@ -43,6 +43,20 @@ export class BookmarksController {
     return await this.bookmarksService.findUserBookmarks(userId);
   }
 
+  @Get(':contentId/check')
+  @ApiOperation({ summary: 'Проверить, есть ли контент в закладках' })
+  @ApiResponse({ status: 200, description: 'Результат проверки' })
+  async checkBookmark(
+    @Param('contentId') contentId: string,
+    @Authorized('id') userId: string,
+  ) {
+    const isBookmarked = await this.bookmarksService.checkBookmark(
+      userId,
+      contentId,
+    );
+    return { isBookmarked };
+  }
+
   @Post(':contentId')
   @ApiOperation({ summary: 'Добавить контент в закладки' })
   @ApiResponse({ status: 201, description: 'Контент добавлен в закладки' })

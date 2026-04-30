@@ -46,6 +46,7 @@ model User {
   friendshipsAsFriend Friendship[]      @relation("FriendFriendships")
   notifications       Notification[]
   contentRatings      ContentRating[]
+  collections         Collection[]
 
   @@index([email])
   @@index([username])
@@ -75,12 +76,45 @@ model Content {
   watchHistory      WatchHistory[]
   contentRatings    ContentRating[]
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-  movie     Movie?
-  series    Series?
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @default(now()) @updatedAt @map("updated_at")
+  movie           Movie?
+  series          Series?
+  collectionItems CollectionItem[]
 
   @@map("contents")
+}
+
+model Collection {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  title       String   @db.VarChar(100)
+  description String?
+  isPublic    Boolean  @default(true) @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CollectionItem[]
+
+  @@index([userId])
+  @@map("collections")
+}
+
+model CollectionItem {
+  id           String   @id @default(uuid())
+  collectionId String   @map("collection_id")
+  contentId    String   @map("content_id")
+  notes        String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  content    Content    @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, contentId])
+  @@index([collectionId])
+  @@map("collection_items")
 }
 
 model Movie {

@@ -63,6 +63,17 @@ export class RatingsController {
     return await this.ratingsService.findAllUserRatingsInContents(userId);
   }
 
+  @Get('my/content/:contentId')
+  @Authorization()
+  @ApiOperation({ summary: 'Получить мою оценку для контента' })
+  @ApiResponse({ status: 200, description: 'Оценка получена' })
+  async getMyContentRating(
+    @Authorized('id') userId: string,
+    @Param('contentId') contentId: string,
+  ) {
+    return this.ratingsService.findUserContentRating(userId, contentId);
+  }
+
   @Post('content/:contentId')
   @Authorization()
   @ApiOperation({ summary: 'Оценить контент' })

@@ -9,6 +9,8 @@ import { CreateMovieDto } from 'src/content/movie/dto/create-movie.dto';
 import { UpdateMovieDto } from 'src/content/movie/dto/update-movie.dto';
 import { CreateSeriesDto } from 'src/content/series/dto/create-series.dto';
 import { UpdateSeriesDto } from 'src/content/series/dto/update-series.dto';
+import { CreateEpisodeDto } from 'src/episode/dto/create-episode.dto';
+import { UpdateEpisodeDto } from 'src/episode/dto/update-episode.dto';
 import { FileService } from 'src/file/file.service';
 import { CreateGenreDto } from 'src/genre/dto/create-genre.dto';
 import { UpdateGenreDto } from 'src/genre/dto/update-genre.dto';
@@ -45,46 +47,62 @@ export class AdminService {
       throw new ConflictException('Такой фильм уже есть');
     }
 
-    return this.prismaService.$transaction(async (tx) => {
-      const content = await tx.content.create({
-        data: {
-          title: dto.title || '',
-          originalTitle: dto.originalTitle,
-          description: dto.description || '',
-          releaseYear: dto.releaseYear,
-          posterUrl: '',
-          backdropUrl: null,
-          imdbRating: dto.imdbRating,
-          kinopoiskRating: dto.kinopoiskRating,
-          ageRating: dto.ageRating,
-          contentType: ContentType.MOVIE,
-        },
-      });
-
-      await tx.movie.create({
-        data: {
-          contentId: content.id,
-          duration: dto.duration,
-          budget: dto.budget,
-        },
-      });
-
-      if (dto.genreIds?.length) {
-        await this.addGenresToContent(content.id, dto.genreIds, tx);
-      }
-
-      if (dto.persons?.length) {
-        await this.addPersonsToContent(content.id, dto.persons, tx);
-      }
-
-      return this.getMovieWithDetails(content.id);
+    // 1. Создаем контент
+    const content = await this.prismaService.content.create({
+      data: {
+        title: dto.title || '',
+        originalTitle: dto.originalTitle,
+        description: dto.description || '',
+        releaseYear: dto.releaseYear,
+        posterUrl: '',
+        backdropUrl: null,
+        imdbRating: dto.imdbRating,
+        kinopoiskRating: dto.kinopoiskRating,
+        ageRating: dto.ageRating,
+        contentType: ContentType.MOVIE,
+      },
     });
+
+    console.log('✅ Content created with ID:', content.id);
+
+    // 2. Создаем movie
+    await this.prismaService.movie.create({
+      data: {
+        contentId: content.id,
+        duration: dto.duration,
+        budget: Number(dto.budget),
+      },
+    });
+
+    console.log('✅ Movie created for content:', content.id);
+
+    // 3. Добавляем жанры
+    if (dto.genreIds?.length) {
+      await this.addGenresToContent(
+        content.id,
+        dto.genreIds,
+        this.prismaService,
+      );
+    }
+
+    // 4. Добавляем персон
+    if (dto.persons?.length) {
+      await this.addPersonsToContent(
+        content.id,
+        dto.persons,
+        this.prismaService,
+      );
+    }
+
+    // 5. Получаем и возвращаем
+    return this.getMovieWithDetails(content.id);
   }
 
   async updateMovie(contentId: string, dto: UpdateMovieDto, userId: string) {
     const existingMovie = await this.prismaService.content.findFirst({
       where: {
         OR: [{ title: dto.title }, { originalTitle: dto.originalTitle }],
+        NOT: { id: contentId },
       },
     });
 
@@ -148,26 +166,69 @@ export class AdminService {
   }
 
   async deleteMovie(contentId: string, userId: string) {
-    const content = await this.prismaService.content.findUnique({
-      where: { id: contentId, contentType: ContentType.MOVIE },
+    // Начинаем транзакцию
+    return this.prismaService.$transaction(async (prisma) => {
+      // 1. Удаляем закладки
+      await prisma.bookmark.deleteMany({
+        where: { contentId },
+      });
+
+      // 2. Удаляем оценки контента
+      await prisma.contentRating.deleteMany({
+        where: { contentId },
+      });
+
+      // 3. Удаляем комментарии к контенту
+      await prisma.comment.deleteMany({
+        where: { contentId },
+      });
+
+      // 4. Удаляем статусы просмотра
+      await prisma.userWatchStatus.deleteMany({
+        where: { contentId },
+      });
+
+      // 5. Удаляем связи с жанрами
+      await prisma.contentGenre.deleteMany({
+        where: { contentId },
+      });
+
+      // 6. Удаляем связи с персонами
+      await prisma.contentPerson.deleteMany({
+        where: { contentId },
+      });
+
+      // 7. Удаляем запись из таблицы movies (если есть)
+      await prisma.movie.deleteMany({
+        where: { contentId },
+      });
+
+      // 8. Удаляем запись из таблицы series (если есть)
+      await prisma.series.deleteMany({
+        where: { contentId },
+      });
+
+      // 9. Получаем информацию о файлах для удаления
+      const content = await prisma.content.findUnique({
+        where: { id: contentId },
+        select: { posterUrl: true, backdropUrl: true },
+      });
+
+      // 10. Удаляем сам контент
+      const deletedContent = await prisma.content.delete({
+        where: { id: contentId },
+      });
+
+      // 11. Удаляем файлы
+      if (content?.posterUrl) {
+        await this.fileService.deleteFile(content.posterUrl);
+      }
+      if (content?.backdropUrl) {
+        await this.fileService.deleteFile(content.backdropUrl);
+      }
+
+      return deletedContent;
     });
-
-    if (!content) {
-      throw new NotFoundException('Фильм не найден');
-    }
-
-    if (content.posterUrl) {
-      await this.fileService.deleteFile(content.posterUrl);
-    }
-    if (content.backdropUrl) {
-      await this.fileService.deleteFile(content.backdropUrl);
-    }
-
-    await this.prismaService.content.delete({
-      where: { id: contentId },
-    });
-
-    return { success: true, message: 'Movie deleted successfully' };
   }
 
   async createSeries(dto: CreateSeriesDto, userId: string) {
@@ -272,49 +333,101 @@ export class AdminService {
   }
 
   async deleteSeries(contentId: string, userId: string) {
-    const content = await this.prismaService.content.findUnique({
-      where: { id: contentId, contentType: ContentType.SERIES },
+    return this.prismaService.$transaction(async (prisma) => {
+      // 1. Находим сериал в таблице series
+      const series = await prisma.series.findUnique({
+        where: { contentId },
+        select: { id: true },
+      });
+
+      if (series) {
+        // 2. Удаляем эпизоды
+        await prisma.episode.deleteMany({
+          where: { seriesId: series.id },
+        });
+      }
+
+      // 3. Удаляем закладки
+      await prisma.bookmark.deleteMany({
+        where: { contentId },
+      });
+
+      // 4. Удаляем оценки контента
+      await prisma.contentRating.deleteMany({
+        where: { contentId },
+      });
+
+      // 5. Удаляем комментарии
+      await prisma.comment.deleteMany({
+        where: { contentId },
+      });
+
+      // 6. Удаляем статусы просмотра
+      await prisma.userWatchStatus.deleteMany({
+        where: { contentId },
+      });
+
+      // 7. Удаляем связи с жанрами
+      await prisma.contentGenre.deleteMany({
+        where: { contentId },
+      });
+
+      // 8. Удаляем связи с персонами
+      await prisma.contentPerson.deleteMany({
+        where: { contentId },
+      });
+
+      // 9. Удаляем запись из таблицы series
+      if (series) {
+        await prisma.series.delete({
+          where: { id: series.id },
+        });
+      }
+
+      // 10. Получаем информацию о файлах
+      const content = await prisma.content.findUnique({
+        where: { id: contentId },
+        select: { posterUrl: true, backdropUrl: true },
+      });
+
+      // 11. Удаляем сам контент
+      const deletedContent = await prisma.content.delete({
+        where: { id: contentId },
+      });
+
+      // 12. Удаляем файлы
+      if (content?.posterUrl) {
+        await this.fileService.deleteFile(content.posterUrl);
+      }
+      if (content?.backdropUrl) {
+        await this.fileService.deleteFile(content.backdropUrl);
+      }
+
+      return deletedContent;
     });
-
-    if (!content) {
-      throw new NotFoundException('Сериал не найден');
-    }
-
-    if (content.posterUrl) {
-      await this.fileService.deleteFile(content.posterUrl);
-    }
-    if (content.backdropUrl) {
-      await this.fileService.deleteFile(content.backdropUrl);
-    }
-
-    await this.prismaService.content.delete({
-      where: { id: contentId },
-    });
-
-    return { success: true, message: 'Series deleted successfully' };
   }
-
   async uploadPoster(
     contentId: string,
     posterFile: Express.Multer.File,
     userId: string,
   ) {
     const content = await this.prismaService.content.findUnique({
-      where: {
-        id: contentId,
-      },
+      where: { id: contentId },
     });
 
     if (!content) {
-      throw new NotFoundException('Фильм не найден');
+      throw new NotFoundException('Контент не найден');
     }
 
+    // Сохраняем файл
     const poster = await this.fileService.saveFile(posterFile, FileType.POSTER);
 
+    // Удаляем старый постер, если есть
     if (content.posterUrl) {
       await this.fileService.deleteFile(content.posterUrl);
     }
 
+    // 🔥 ОБНОВЛЯЕМ ПОЛЕ posterUrl В БД
     return this.prismaService.content.update({
       where: { id: contentId },
       data: { posterUrl: poster.url },
@@ -322,12 +435,7 @@ export class AdminService {
         movie: true,
         series: true,
         genres: { include: { genre: true } },
-        persons: {
-          include: {
-            person: true,
-            role: true,
-          },
-        },
+        persons: { include: { person: true, role: true } },
       },
     });
   }
@@ -619,21 +727,26 @@ export class AdminService {
   }
 
   private async getMovieWithDetails(contentId: string) {
-    return await this.prismaService.content.findUnique({
+    console.log('🔍 Getting movie details for ID:', contentId);
+
+    const result = await this.prismaService.content.findUnique({
       where: { id: contentId },
       include: {
         movie: true,
-        genres: {
-          include: { genre: true },
-        },
-        persons: {
-          include: {
-            person: true,
-            role: true,
-          },
-        },
+        genres: { include: { genre: true } },
+        persons: { include: { person: true, role: true } },
       },
     });
+
+    console.log('🔍 Raw result:', result);
+
+    if (!result) return null;
+
+    if (result.movie?.budget) {
+      (result.movie as any).budget = Number(result.movie.budget);
+    }
+
+    return result;
   }
 
   async createPersonRole(userId: string, dto: CreatePersonRoleDto) {
@@ -696,6 +809,427 @@ export class AdminService {
     return role;
   }
 
+  // ========== УПРАВЛЕНИЕ ЭПИЗОДАМИ ==========
+
+  async createEpisode(
+    contentId: string,
+    dto: CreateEpisodeDto,
+    userId: string,
+  ) {
+    // 1. Находим контент с типом SERIES
+    const content = await this.prismaService.content.findUnique({
+      where: { id: contentId, contentType: ContentType.SERIES },
+      include: { series: true },
+    });
+
+    if (!content || !content.series) {
+      throw new NotFoundException('Сериал не найден');
+    }
+
+    // 2. Получаем внутренний ID сериала из таблицы series
+    const seriesId = content.series.id;
+
+    // 3. Проверяем, не существует ли уже такой эпизод
+    const existingEpisode = await this.prismaService.episode.findUnique({
+      where: {
+        seriesId_seasonNumber_episodeNumber: {
+          seriesId,
+          seasonNumber: dto.seasonNumber,
+          episodeNumber: dto.episodeNumber,
+        },
+      },
+    });
+
+    if (existingEpisode) {
+      throw new ConflictException('Эпизод с таким номером уже существует');
+    }
+
+    // 4. Создаем эпизод
+    const episode = await this.prismaService.episode.create({
+      data: {
+        seriesId,
+        seasonNumber: dto.seasonNumber,
+        episodeNumber: dto.episodeNumber,
+        title: dto.title,
+        duration: dto.duration,
+        description: dto.description,
+        airDate: dto.airDate ? new Date(dto.airDate) : null,
+      },
+      include: {
+        series: {
+          include: { content: true },
+        },
+      },
+    });
+
+    // 5. Обновляем общее количество эпизодов в сериале
+    const episodesCount = await this.prismaService.episode.count({
+      where: { seriesId },
+    });
+
+    await this.prismaService.series.update({
+      where: { id: seriesId },
+      data: { episodesCount },
+    });
+
+    return episode;
+  }
+
+  async updateEpisode(
+    episodeId: string,
+    dto: UpdateEpisodeDto,
+    userId: string,
+  ) {
+    const episode = await this.prismaService.episode.findUnique({
+      where: { id: episodeId },
+      include: { series: true },
+    });
+
+    if (!episode) {
+      throw new NotFoundException('Эпизод не найден');
+    }
+
+    // Если меняется сезон или номер, проверяем дубликат
+    if (dto.seasonNumber || dto.episodeNumber) {
+      const seasonNumber = dto.seasonNumber ?? episode.seasonNumber;
+      const episodeNumber = dto.episodeNumber ?? episode.episodeNumber;
+
+      const existing = await this.prismaService.episode.findFirst({
+        where: {
+          seriesId: episode.seriesId,
+          seasonNumber,
+          episodeNumber,
+          NOT: { id: episodeId },
+        },
+      });
+
+      if (existing) {
+        throw new ConflictException('Эпизод с таким номером уже существует');
+      }
+    }
+
+    // Обновляем эпизод
+    const updatedEpisode = await this.prismaService.episode.update({
+      where: { id: episodeId },
+      data: {
+        seasonNumber: dto.seasonNumber,
+        episodeNumber: dto.episodeNumber,
+        title: dto.title,
+        duration: dto.duration,
+        description: dto.description,
+        airDate: dto.airDate ? new Date(dto.airDate) : undefined,
+      },
+      include: {
+        series: {
+          include: { content: true },
+        },
+      },
+    });
+
+    return updatedEpisode;
+  }
+
+  async deleteEpisode(episodeId: string, userId: string) {
+    const episode = await this.prismaService.episode.findUnique({
+      where: { id: episodeId },
+      include: { series: true },
+    });
+
+    if (!episode) {
+      throw new NotFoundException('Эпизод не найден');
+    }
+
+    const seriesId = episode.seriesId;
+
+    // Удаляем эпизод
+    await this.prismaService.episode.delete({
+      where: { id: episodeId },
+    });
+
+    // Обновляем общее количество эпизодов в сериале
+    const episodesCount = await this.prismaService.episode.count({
+      where: { seriesId },
+    });
+
+    await this.prismaService.series.update({
+      where: { id: seriesId },
+      data: { episodesCount },
+    });
+
+    return { success: true, message: 'Эпизод успешно удален' };
+  }
+
+  // ========== УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ ==========
+
+  async getUsers() {
+    return this.prismaService.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        emailVerified: true,
+        avatarUrl: true,
+        telegramId: true,
+        bio: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getUserById(id: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        emailVerified: true,
+        avatarUrl: true,
+        telegramId: true,
+        bio: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    return user;
+  }
+
+  async updateUserRole(userId: string, role: string, adminId: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    if (userId === adminId) {
+      throw new BadRequestException('Нельзя изменить свою роль');
+    }
+
+    const validRoles = ['ADMIN', 'MODERATOR', 'USER'];
+    if (!validRoles.includes(role)) {
+      throw new BadRequestException('Некорректная роль');
+    }
+
+    const updatedUser = await this.prismaService.user.update({
+      where: { id: userId },
+      data: { role: role as any },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+      },
+    });
+
+    return { message: 'Роль пользователя обновлена', user: updatedUser };
+  }
+
+  async deleteUser(userId: string, adminId: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    if (userId === adminId) {
+      throw new BadRequestException('Нельзя удалить самого себя');
+    }
+
+    // Удаляем связанные данные
+    await this.prismaService.$transaction([
+      this.prismaService.bookmark.deleteMany({ where: { userId } }),
+      this.prismaService.comment.deleteMany({ where: { userId } }),
+      this.prismaService.contentRating.deleteMany({ where: { userId } }),
+      this.prismaService.commentRating.deleteMany({ where: { userId } }),
+      this.prismaService.userWatchStatus.deleteMany({ where: { userId } }),
+      this.prismaService.watchHistory.deleteMany({ where: { userId } }),
+      this.prismaService.notification.deleteMany({ where: { userId } }),
+      this.prismaService.user.delete({ where: { id: userId } }),
+    ]);
+
+    return { message: 'Пользователь удален' };
+  }
+
+  // ========== УПРАВЛЕНИЕ КОММЕНТАРИЯМИ ==========
+
+  async getComments(status?: string, page: number = 1) {
+    const limit = 20;
+    const where: any = {};
+
+    const [items, total] = await Promise.all([
+      this.prismaService.comment.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              avatarUrl: true,
+            },
+          },
+          content: {
+            select: {
+              id: true,
+              title: true,
+              posterUrl: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prismaService.comment.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async getCommentById(id: string) {
+    const comment = await this.prismaService.comment.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+          },
+        },
+        content: {
+          select: {
+            id: true,
+            title: true,
+            posterUrl: true,
+          },
+        },
+        reports: true,
+      },
+    });
+
+    if (!comment) {
+      throw new NotFoundException('Комментарий не найден');
+    }
+
+    return comment;
+  }
+
+  async deleteComment(commentId: string, adminId: string) {
+    const comment = await this.prismaService.comment.findUnique({
+      where: { id: commentId },
+    });
+
+    if (!comment) {
+      throw new NotFoundException('Комментарий не найден');
+    }
+
+    // Удаляем связанные данные
+    await this.prismaService.$transaction([
+      this.prismaService.commentRating.deleteMany({ where: { commentId } }),
+      this.prismaService.commentReport.deleteMany({ where: { commentId } }),
+      this.prismaService.comment.delete({ where: { id: commentId } }),
+    ]);
+
+    return { message: 'Комментарий удален' };
+  }
+
+  // ========== УПРАВЛЕНИЕ ЖАЛОБАМИ ==========
+
+  async getReports() {
+    const query = `
+    SELECT 
+      cr.id,
+      cr.reason,
+      cr.status,
+      cr.created_at as "createdAt",
+      cr.comment_id,
+      cr.user_id as reporter_id,
+      c.text as comment_text,
+      c.user_id as comment_author_id,
+      c.content_id,
+      reporter.username as reporter_username,
+      reporter.avatar_url as reporter_avatar,
+      author.username as author_username,
+      author.avatar_url as author_avatar,
+      cont.title as content_title
+    FROM comment_reports cr
+    LEFT JOIN comments c ON cr.comment_id = c.id
+    LEFT JOIN users reporter ON cr.user_id = reporter.id
+    LEFT JOIN users author ON c.user_id = author.id
+    LEFT JOIN contents cont ON c.content_id = cont.id
+    ORDER BY cr.created_at DESC
+  `;
+
+    const results = await this.prismaService.$queryRawUnsafe<any[]>(query);
+
+    console.log('📊 Результат запроса жалоб:', results);
+
+    // Преобразуем результат в формат, который ожидает фронтенд
+    return results.map((row) => ({
+      id: row.id,
+      reason: row.reason,
+      status: row.status,
+      createdAt: row.createdAt,
+      comment: {
+        id: row.comment_id,
+        text: row.comment_text || 'Комментарий удалён',
+        user: {
+          id: row.comment_author_id,
+          username: row.author_username || 'Неизвестный пользователь',
+          avatarUrl: row.author_avatar,
+        },
+        content: {
+          id: row.content_id,
+          title: row.content_title || 'Контент удалён',
+        },
+      },
+      user: {
+        id: row.reporter_id,
+        username: row.reporter_username || 'Неизвестный пользователь',
+        avatarUrl: row.reporter_avatar,
+      },
+    }));
+  }
+
+  async resolveReport(id: string) {
+    const query = `
+    UPDATE comment_reports 
+    SET status = 'resolved' 
+    WHERE id = '${id}'
+  `;
+
+    await this.prismaService.$executeRawUnsafe(query);
+
+    return { message: 'Жалоба решена' };
+  }
+
+  async rejectReport(id: string) {
+    const query = `
+    UPDATE comment_reports 
+    SET status = 'rejected' 
+    WHERE id = '${id}'
+  `;
+
+    await this.prismaService.$executeRawUnsafe(query);
+
+    return { message: 'Жалоба отклонена' };
+  }
   private async addGenresToContent(
     contentId: string,
     genresIds: string[],

@@ -13,7 +13,6 @@ import { Request, Response } from 'express';
 import { UserRole } from 'generated/prisma/enums';
 import { FileService } from 'src/file/file.service';
 import { FileType } from 'src/lib/common/enums/type-file.enum';
-import { isDev } from 'src/lib/common/utils/is-dev.util';
 import { parseJwtTtl } from 'src/lib/common/utils/parse-jwt-ttl.util';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
@@ -45,7 +44,7 @@ export class AuthService {
   }
 
   async register(res: Response, dto: RegisterDto, avatar: Express.Multer.File) {
-    const { username, email, password, telegramId } = dto;
+    const { username, email, password } = dto;
 
     let avatarUrl: string | null = null;
 
@@ -65,15 +64,6 @@ export class AuthService {
       throw new ConflictException('Пользователь с таким email уже существует');
     }
 
-    const existsUserTelegramId = await this.prismaService.user.findUnique({
-      where: { telegramId },
-    });
-    if (existsUserTelegramId) {
-      throw new ConflictException(
-        'Пользователь с таким telegramId уже существует',
-      );
-    }
-
     const emailVerifyToken = this.generateTokenEmail();
     const emailTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
@@ -83,7 +73,6 @@ export class AuthService {
         email,
         passwordHash: await hash(password),
         avatarUrl,
-        telegramId,
         emailVerifyToken,
         emailTokenExpiresAt,
       },
@@ -236,10 +225,13 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Пользователь не найден');
     }
+    console.log('👤 validate возвращает:', user);
     return user;
   }
 
   private async auth(res: Response, id: string, checkEmailVerified = true) {
+    console.log('🔐 Auth method called for user:', id);
+
     const user = await this.prismaService.user.findUnique({
       where: { id },
       select: {
@@ -257,29 +249,26 @@ export class AuthService {
       throw new NotFoundException('Пользователь не найден');
     }
 
-    if (checkEmailVerified && !user.emailVerified) {
-      throw new BadRequestException('Email не подтвержден');
-    }
-
+    console.log('🔐 auth возвращает пользователя:', user);
     const { accessToken, refreshToken } = this.generateToken(user);
+    console.log('🎟️ Токены сгенерированы:', {
+      hasAccessToken: !!accessToken,
+      hasRefreshToken: !!refreshToken,
+    });
 
+    // Устанавливаем cookie
     this.SetCookie(
       res,
       'refreshToken',
       refreshToken,
       new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
     );
+
+    console.log('✅ Auth успешен, refreshToken отправлен в cookie');
+
     return {
       accessToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        role: user.role,
-        telegramId: user.telegramId,
-        avatarUrl: user.avatarUrl,
-        emailVerified: user.emailVerified,
-      },
+      user,
     };
   }
 
@@ -312,14 +301,27 @@ export class AuthService {
   }
 
   private SetCookie(res: Response, name: string, value: string, expires: Date) {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
     res.cookie(name, value, {
       httpOnly: true,
       domain: this.COOKIE_DOMAIN,
       expires,
-      secure: !isDev(this.configService),
-      sameSite: isDev(this.configService) ? 'none' : 'lax',
+      secure: !isDevelopment, // false в dev, true в prod
+      sameSite: isDevelopment ? 'lax' : 'none',
+      path: '/',
     });
+
+    console.log(`🍪 Cookie ${name} установлена:`, {
+      value: value.substring(0, 20) + '...',
+      expires,
+      secure: !isDevelopment,
+      sameSite: isDevelopment ? 'lax' : 'none',
+    });
+
+    res.setHeader('Set-Cookie', res.getHeader('Set-Cookie'));
   }
+
   private generateTokenEmail(): string {
     return crypto.randomBytes(32).toString('hex');
   }

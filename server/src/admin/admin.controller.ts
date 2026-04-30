@@ -2,9 +2,12 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
+  Patch,
   Post,
   Put,
+  Query,
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
@@ -28,6 +31,8 @@ import { CreateMovieDto } from 'src/content/movie/dto/create-movie.dto';
 import { UpdateMovieDto } from 'src/content/movie/dto/update-movie.dto';
 import { CreateSeriesDto } from 'src/content/series/dto/create-series.dto';
 import { UpdateSeriesDto } from 'src/content/series/dto/update-series.dto';
+import { CreateEpisodeDto } from 'src/episode/dto/create-episode.dto';
+import { UpdateEpisodeDto } from 'src/episode/dto/update-episode.dto';
 import { CreateGenreDto } from 'src/genre/dto/create-genre.dto';
 import { UpdateGenreDto } from 'src/genre/dto/update-genre.dto';
 import { CreatePersonRoleDto } from 'src/person-role/dto/create-person-role.dto';
@@ -127,6 +132,40 @@ export class AdminController {
     @Authorized('id') userId: string,
   ) {
     return this.adminService.deleteSeries(contentId, userId);
+  }
+
+  // ========== УПРАВЛЕНИЕ ЭПИЗОДАМИ ==========
+
+  @Post('series/:seriesId/episodes')
+  @ApiOperation({ summary: 'Создать эпизод для сериала (только админ)' })
+  @ApiParam({ name: 'seriesId', description: 'UUID сериала' })
+  async createEpisode(
+    @Param('seriesId') seriesId: string,
+    @Body() dto: CreateEpisodeDto,
+    @Authorized('id') userId: string,
+  ) {
+    return this.adminService.createEpisode(seriesId, dto, userId);
+  }
+
+  @Put('episodes/:episodeId')
+  @ApiOperation({ summary: 'Обновить эпизод (только админ)' })
+  @ApiParam({ name: 'episodeId', description: 'UUID эпизода' })
+  async updateEpisode(
+    @Param('episodeId') episodeId: string,
+    @Body() dto: UpdateEpisodeDto,
+    @Authorized('id') userId: string,
+  ) {
+    return this.adminService.updateEpisode(episodeId, dto, userId);
+  }
+
+  @Delete('episodes/:episodeId')
+  @ApiOperation({ summary: 'Удалить эпизод (только админ)' })
+  @ApiParam({ name: 'episodeId', description: 'UUID эпизода' })
+  async deleteEpisode(
+    @Param('episodeId') episodeId: string,
+    @Authorized('id') userId: string,
+  ) {
+    return this.adminService.deleteEpisode(episodeId, userId);
   }
 
   // ========== УПРАВЛЕНИЕ ИЗОБРАЖЕНИЯМИ ==========
@@ -355,5 +394,88 @@ export class AdminController {
     @Authorized('id') userId: string,
   ) {
     return this.adminService.deletePersonRole(userId, roleId);
+  }
+
+  // ========== УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ ==========
+
+  @Get('users')
+  @ApiOperation({ summary: 'Получить всех пользователей (только админ)' })
+  async getUsers() {
+    return await this.adminService.getUsers();
+  }
+
+  @Get('users/:id')
+  @ApiOperation({ summary: 'Получить пользователя по ID (только админ)' })
+  @ApiParam({ name: 'id', description: 'UUID пользователя' })
+  async getUserById(@Param('id') id: string) {
+    return await this.adminService.getUserById(id);
+  }
+
+  @Patch('users/:id/role')
+  @ApiOperation({ summary: 'Изменить роль пользователя (только админ)' })
+  @ApiParam({ name: 'id', description: 'UUID пользователя' })
+  async updateUserRole(
+    @Param('id') id: string,
+    @Body('role') role: string,
+    @Authorized('id') adminId: string,
+  ) {
+    return await this.adminService.updateUserRole(id, role, adminId);
+  }
+
+  @Delete('users/:id')
+  @ApiOperation({ summary: 'Удалить пользователя (только админ)' })
+  @ApiParam({ name: 'id', description: 'UUID пользователя' })
+  async deleteUser(@Param('id') id: string, @Authorized('id') adminId: string) {
+    return await this.adminService.deleteUser(id, adminId);
+  }
+
+  // ========== УПРАВЛЕНИЕ КОММЕНТАРИЯМИ ==========
+
+  @Get('comments')
+  @ApiOperation({ summary: 'Получить все комментарии (только админ)' })
+  async getComments(
+    @Query('status') status?: string,
+    @Query('page') page?: number,
+  ) {
+    return await this.adminService.getComments(status, page);
+  }
+
+  @Get('comments/:id')
+  @ApiOperation({ summary: 'Получить комментарий по ID (только админ)' })
+  @ApiParam({ name: 'id', description: 'UUID комментария' })
+  async getCommentById(@Param('id') id: string) {
+    return await this.adminService.getCommentById(id);
+  }
+
+  @Delete('comments/:id')
+  @ApiOperation({ summary: 'Удалить комментарий (только админ)' })
+  @ApiParam({ name: 'id', description: 'UUID комментария' })
+  async deleteComment(
+    @Param('id') id: string,
+    @Authorized('id') adminId: string,
+  ) {
+    return await this.adminService.deleteComment(id, adminId);
+  }
+
+  // ========== УПРАВЛЕНИЕ ЖАЛОБАМИ ==========
+
+  @Get('reports')
+  @ApiOperation({ summary: 'Получить все жалобы (только админ)' })
+  async getReports() {
+    return await this.adminService.getReports();
+  }
+
+  @Patch('reports/:id/resolve')
+  @ApiOperation({ summary: 'Решить жалобу (только админ)' })
+  @ApiParam({ name: 'id', description: 'UUID жалобы' })
+  async resolveReport(@Param('id') id: string) {
+    return await this.adminService.resolveReport(id);
+  }
+
+  @Patch('reports/:id/reject')
+  @ApiOperation({ summary: 'Отклонить жалобу (только админ)' })
+  @ApiParam({ name: 'id', description: 'UUID жалобы' })
+  async rejectReport(@Param('id') id: string) {
+    return await this.adminService.rejectReport(id);
   }
 }

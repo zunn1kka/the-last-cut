@@ -44,10 +44,10 @@ export class UserService {
   async updateProfile(
     userId: string,
     dto: UpdateProfileDto,
-    avatar: Express.Multer.File,
+    avatar?: Express.Multer.File,
   ) {
     const userAvatar = await this.getProfile(userId);
-    let avatarUrl: string | null = null;
+    let avatarUrl: string;
 
     if (avatar) {
       if (userAvatar?.avatarUrl) {

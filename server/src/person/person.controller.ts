@@ -6,9 +6,12 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Authorization } from 'src/auth/decorators/authorization.decorator';
+import { SearchPersonDto } from './dto/search-person.dto';
 import { PersonService } from './person.service';
 
 @Authorization()
@@ -18,42 +21,28 @@ import { PersonService } from './person.service';
 export class PersonController {
   constructor(private readonly personService: PersonService) {}
 
-  @Get()
   @ApiOperation({
-    summary: 'Получить всех персон',
-    description: 'Возвращает список всех персон (актеров, режиссеров и т.д.)',
+    summary: 'Поиск персон',
+    description: 'Поиск персон по имени, фамилии',
   })
   @ApiOkResponse({
-    description: 'Персоны успешно получены',
+    description: 'Результаты поиска успешно получены',
   })
   @ApiBadRequestResponse({
-    description: 'Невалидные параметры пагинации',
+    description: 'Поисковый запрос слишком короткий или отсутствует',
   })
-  async findAll() {
-    return await this.personService.findAll();
+  @Get('search')
+  @ApiOperation({ summary: 'Поиск персон с фильтрацией' })
+  @ApiResponse({ status: 200, description: 'Результаты поиска' })
+  async search(@Query() dto: SearchPersonDto) {
+    return this.personService.search(dto);
   }
 
-  @ApiOperation({
-    summary: 'Получить персону по ID',
-    description: 'Возвращает полную информацию о персоне включая фильмографию.',
-  })
-  @ApiParam({
-    name: 'personId',
-    description: 'UUID идентификатор персоны',
-    example: '550e8400-e29b-41d4-a716-446655440000',
-  })
-  @ApiOkResponse({
-    description: 'Персона успешно найдена',
-  })
-  @ApiNotFoundResponse({
-    description: 'Персона с указанным ID не найдена',
-  })
-  @ApiBadRequestResponse({
-    description: 'Невалидный UUID идентификатор',
-  })
-  @Get(':personId')
-  async findOne(@Param('personId') personId: string) {
-    return await this.personService.findOne(personId);
+  @Get('autocomplete')
+  @ApiOperation({ summary: 'Автодополнение для поиска персон' })
+  @ApiQuery({ name: 'q', required: true, description: 'Поисковый запрос' })
+  async autocomplete(@Query('q') query: string) {
+    return this.personService.autocomplete(query);
   }
 
   @ApiOperation({
@@ -80,18 +69,54 @@ export class PersonController {
     return await this.personService.findAllInMovie(contentId);
   }
 
-  @Get('search')
+  @Get(':id/content')
+  @ApiOperation({ summary: 'Получить все работы персоны' })
+  async getPersonContent(@Param('id') id: string) {
+    return this.personService.findPersonContent(id);
+  }
+
   @ApiOperation({
-    summary: 'Поиск персон',
-    description: 'Поиск персон по имени, фамилии',
+    summary: 'Получить персону по ID',
+    description: 'Возвращает полную информацию о персоне включая фильмографию.',
+  })
+  @ApiParam({
+    name: 'personId',
+    description: 'UUID идентификатор персоны',
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @ApiOkResponse({
-    description: 'Результаты поиска успешно получены',
+    description: 'Персона успешно найдена',
+  })
+  @ApiNotFoundResponse({
+    description: 'Персона с указанным ID не найдена',
   })
   @ApiBadRequestResponse({
-    description: 'Поисковый запрос слишком короткий или отсутствует',
+    description: 'Невалидный UUID идентификатор',
   })
-  async search(@Query('query') query: string) {
-    return await this.personService.search(query);
+  @Get(':personId')
+  async findOne(@Param('personId') personId: string) {
+    return await this.personService.findOne(personId);
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: 'Получить всех персон',
+    description: 'Возвращает список всех персон (актеров, режиссеров и т.д.)',
+  })
+  @ApiOkResponse({
+    description: 'Персоны успешно получены',
+  })
+  @ApiBadRequestResponse({
+    description: 'Невалидные параметры пагинации',
+  })
+  async findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('query') query?: string,
+  ) {
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 20;
+
+    return this.personService.findAll(pageNum, limitNum, query);
   }
 }

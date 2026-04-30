@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
 import * as path from 'path';
 import { AppModule } from './app.module';
+import { BigIntInterceptor } from './lib/common/interceptors/bigint.interceptor';
 import { setupSwagger } from './lib/common/utils/swagger.util';
 
 async function bootstrap() {
@@ -21,6 +22,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  app.useGlobalInterceptors(new BigIntInterceptor());
 
   app.enableCors({
     origin: config.getOrThrow<string>('ALLOWED_ORIGIN'),

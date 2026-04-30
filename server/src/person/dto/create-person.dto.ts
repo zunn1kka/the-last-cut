@@ -19,7 +19,6 @@ export class CreatePersonDto {
     maxLength: 120,
   })
   @IsString()
-  @IsString({ message: 'Полное имя должно быть строкой' })
   @IsNotEmpty({ message: 'Полное имя обязательно' })
   @MinLength(2, { message: 'Полное имя должно содержать минимум 2 символа' })
   @MaxLength(120, { message: 'Полное имя не должно превышать 120 символов' })
@@ -29,46 +28,50 @@ export class CreatePersonDto {
   @IsUrl()
   photoUrl?: string;
 
-  @IsString({ message: 'Биография должна быть строкой' })
+  @IsString()
   @IsOptional()
   biography?: string;
 
   @ApiPropertyOptional({
     description: 'Дата рождения в формате ISO 8601',
     example: '1970-07-30',
-    format: 'date',
   })
   @IsOptional()
   @Transform(({ value }) => {
     if (!value) return null;
-    if (typeof value === 'string' && value.includes('-')) {
-      const parts = value.split('-');
-      if (parts.length === 3) {
-        const [day, month, year] = parts;
-        return new Date(`${year}-${month}-${day}T00:00:00.000Z`).toISOString();
+
+    // Если это строка, пробуем преобразовать
+    if (typeof value === 'string') {
+      // Пробуем распарсить дату
+      const date = new Date(value);
+
+      // Проверяем, что дата валидна
+      if (!isNaN(date.getTime())) {
+        return date.toISOString();
       }
     }
+
     return value;
   })
   @IsDateString()
   birthDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Дата смерти в формате ISO 8601',
+    description: 'Дата смерти',
     example: null,
-    format: 'date',
     nullable: true,
   })
   @IsOptional()
   @Transform(({ value }) => {
     if (!value || value === 'null' || value === '') return null;
-    if (typeof value === 'string' && value.includes('-')) {
-      const parts = value.split('-');
-      if (parts.length === 3) {
-        const [day, month, year] = parts;
-        return new Date(`${year}-${month}-${day}T00:00:00.000Z`).toISOString();
+
+    if (typeof value === 'string') {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString();
       }
     }
+
     return value;
   })
   @IsDateString()

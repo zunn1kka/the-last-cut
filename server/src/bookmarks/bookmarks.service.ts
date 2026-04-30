@@ -66,4 +66,16 @@ export class BookmarksService {
 
     return bookmark;
   }
+
+  async checkBookmark(userId: string, contentId: string): Promise<boolean> {
+    const bookmark = await this.prismaService.bookmark.findUnique({
+      where: {
+        userId_contentId: {
+          userId,
+          contentId,
+        },
+      },
+    });
+    return !!bookmark;
+  }
 }

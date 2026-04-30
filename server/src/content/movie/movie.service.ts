@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ContentType } from 'generated/prisma/enums';
 import { FileService } from 'src/file/file.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -9,28 +10,49 @@ export class MovieService {
     private readonly fileService: FileService,
   ) {}
 
-  // private groupPersonsByRole(persons: any[]) {
-  //   const grouped: Record<string, any[]> = {};
+  async findAll() {
+    const movies = await this.prismaService.content.findMany({
+      where: { contentType: ContentType.MOVIE },
+      include: {
+        movie: true,
+      },
+    });
 
-  //   persons.forEach((cp) => {
-  //     const roleName = cp.role?.name || 'Other';
-  //     if (!grouped[roleName]) {
-  //       grouped[roleName] = [];
-  //     }
+    return movies.map((movie) => {
+      if (movie.movie?.budget) {
+        (movie.movie as any).budget = Number(movie.movie.budget);
+      }
+      return movie;
+    });
+  }
 
-  //     grouped[roleName].push({
-  //       id: cp.person.id,
-  //       fullname: cp.person.fullname,
-  //       photoUrl: cp.person.photoUrl,
-  //       roleName: cp.roleName || cp.role?.name,
-  //       importance: cp.importance,
-  //     });
-  //   });
+  async findOne(movieId: string) {
+    const movie = await this.prismaService.content.findUnique({
+      where: {
+        id: movieId,
+        contentType: ContentType.MOVIE,
+      },
+      include: {
+        movie: true,
+        genres: {
+          include: { genre: true },
+        },
+        persons: {
+          include: {
+            person: true,
+            role: true,
+          },
+        },
+      },
+    });
 
-  //   Object.keys(grouped).forEach((role) => {
-  //     grouped[role].sort((a, b) => b.importance - a.importance);
-  //   });
+    if (!movie) {
+      throw new NotFoundException('Фильм не найден');
+    }
+    if (movie.movie?.budget) {
+      (movie.movie as any).budget = Number(movie.movie.budget);
+    }
 
-  //   return grouped;
-  // }
+    return movie;
+  }
 }

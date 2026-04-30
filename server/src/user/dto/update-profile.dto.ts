@@ -2,7 +2,6 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsOptional,
   IsString,
-  IsUrl,
   Matches,
   MaxLength,
   MinLength,
@@ -46,7 +45,7 @@ export class UpdateProfileDto {
     maxLength: 255,
   })
   @IsOptional()
-  @IsUrl({}, { message: 'Некорректный URL аватарки' })
+  // @IsUrl({}, { message: 'Некорректный URL аватарки' })
   @MaxLength(255, { message: 'URL аватарки не должен превышать 255 символов' })
   avatarUrl?: string;
 
