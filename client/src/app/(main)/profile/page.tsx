@@ -463,7 +463,7 @@ export default function ProfilePage() {
 					<div className='mb-8'>
 						<EmailVerification
 							email={user.email}
-							isVerified={user.emailVerified || false}
+							isVerified={(user as any).emailVerified || false}
 							onVerified={() => {
 								updateUser({ emailVerified: true })
 							}}
