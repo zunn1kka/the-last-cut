@@ -5,7 +5,6 @@ const nextConfig: NextConfig = {
 		ignoreBuildErrors: true,
 	},
 	images: {
-		// Разрешаем localhost и 127.0.0.1
 		remotePatterns: [
 			{
 				protocol: 'http',
@@ -14,16 +13,20 @@ const nextConfig: NextConfig = {
 				pathname: '/uploads/**',
 			},
 			{
-				protocol: 'http',
-				hostname: '127.0.0.1',
-				port: '4000',
-				pathname: '/uploads/**',
+				protocol: 'https',
+				hostname: '**',
 			},
 		],
-		// Добавляем deviceSizes для оптимизации
 		deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-		// Форматы изображений
 		formats: ['image/webp'],
+	},
+	async rewrites() {
+		return [
+			{
+				source: '/api/:path*',
+				destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
+			},
+		]
 	},
 }
 
