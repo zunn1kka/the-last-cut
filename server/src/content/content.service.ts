@@ -7,7 +7,6 @@ export class ContentService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findAll(dto: FindAllContentDto) {
-    return process.env.POSTGRES_URL;
     console.log('DBurl ', process.env.POSTGRES_URL);
     const {
       page = 1,
