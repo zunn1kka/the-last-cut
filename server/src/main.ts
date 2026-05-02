@@ -6,6 +6,7 @@ import * as express from 'express';
 import * as path from 'path';
 import { AppModule } from './app.module';
 import { BigIntInterceptor } from './lib/common/interceptors/bigint.interceptor';
+import { DateInterceptor } from './lib/common/interceptors/date.interceptor';
 import { setupSwagger } from './lib/common/utils/swagger.util';
 
 async function bootstrap() {
@@ -23,6 +24,7 @@ async function bootstrap() {
     }),
   );
 
+  app.useGlobalInterceptors(new DateInterceptor());
   app.useGlobalInterceptors(new BigIntInterceptor());
 
   app.enableCors({
