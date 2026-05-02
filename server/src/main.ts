@@ -10,14 +10,10 @@ import { setupSwagger } from './lib/common/utils/swagger.util';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService);
-  app.useLogger(console);
-  const databaseUrl = configService.get('POSTGRES_URL');
-  console.log(databaseUrl);
 
   const config = app.get(ConfigService);
 
-  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  app.use('uploads', express.static(path.join(process.cwd(), 'uploads')));
 
   app.use(cookieParser());
 
