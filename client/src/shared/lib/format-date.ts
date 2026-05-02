@@ -1,4 +1,5 @@
 export const formatDate = (dateString: string | null | undefined): string => {
+	console.log('formatDate input:', dateString, typeof dateString)
 	if (!dateString) return '—'
 
 	try {

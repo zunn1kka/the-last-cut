@@ -191,6 +191,8 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 							</Link>
 							<p className='text-xs text-gray-500'>
 								{formatRelativeTime(comment.createdAt)}
+								console.log('createdAt:', comment.createdAt);
+								console.log('formatDate:', formatDate(comment.createdAt));
 							</p>
 						</div>
 					</div>
