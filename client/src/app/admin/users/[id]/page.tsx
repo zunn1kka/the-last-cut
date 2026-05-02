@@ -1,6 +1,7 @@
 'use client'
 
 import { adminApi } from '@/shared/api/admin/admin-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import {
 	Calendar,
@@ -77,7 +78,7 @@ export default function UserDetailsPage() {
 						<div className='relative w-20 h-20 rounded-full overflow-hidden bg-gray-200'>
 							{user.avatarUrl ? (
 								<Image
-									src={`${process.env.NEXT_PUBLIC_API_URL}${user.avatarUrl}`}
+									src={getImageUrl(user.avatarUrl)}
 									alt={user.username}
 									fill
 									className='object-cover'

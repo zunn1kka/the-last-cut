@@ -4,7 +4,6 @@ import { adminApi } from '@/shared/api/admin/admin-api'
 import { genreApi } from '@/shared/api/genres/genre-api'
 import { personRolesApi } from '@/shared/api/person-roles/person-roles-api'
 import { personsApi } from '@/shared/api/persons/persons-api'
-import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { Image as ImageIcon, Plus, Search, X } from 'lucide-react'
 import Image from 'next/image'
@@ -270,7 +269,7 @@ export function SeriesForm({
 							{posterPreview ? (
 								<>
 									<Image
-										src={getImageUrl(posterPreview)}
+										src={posterPreview}
 										alt='Poster preview'
 										fill
 										className='object-cover'
@@ -314,7 +313,7 @@ export function SeriesForm({
 							{backdropPreview ? (
 								<>
 									<Image
-										src={getImageUrl(backdropPreview)}
+										src={backdropPreview}
 										alt='Backdrop preview'
 										fill
 										className='object-cover'

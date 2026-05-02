@@ -1,6 +1,7 @@
 'use client'
 
 import { contentApi } from '@/shared/api/content/content-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import { Info, Play } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -48,7 +49,7 @@ export function HeroSection() {
 							<div className='absolute inset-0'>
 								{item.backdropUrl ? (
 									<Image
-										src={`${process.env.NEXT_PUBLIC_API_URL}${item.backdropUrl}`}
+										src={getImageUrl(item.backdropUrl)}
 										alt={item.title}
 										fill
 										unoptimized={true}
@@ -57,7 +58,7 @@ export function HeroSection() {
 									/>
 								) : item.posterUrl ? (
 									<Image
-										src={`${process.env.NEXT_PUBLIC_API_URL}${item.posterUrl}`}
+										src={getImageUrl(item.posterUrl)}
 										alt={item.title}
 										fill
 										unoptimized={true}
