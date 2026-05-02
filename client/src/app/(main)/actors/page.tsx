@@ -1,6 +1,7 @@
 'use client'
 
 import { personsApi } from '@/shared/api/persons/persons-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { Loader2, Search, User, Users } from 'lucide-react'
 import Image from 'next/image'
@@ -110,7 +111,7 @@ export default function ActorsPage() {
 										<div className='relative aspect-[3/4] overflow-hidden bg-custom-darker'>
 											{actor.photoUrl ? (
 												<Image
-													src={`${process.env.NEXT_PUBLIC_API_URL}${actor.photoUrl}`}
+													src={getImageUrl(actor.photoUrl)}
 													alt={actor.fullname}
 													fill
 													unoptimized={true}

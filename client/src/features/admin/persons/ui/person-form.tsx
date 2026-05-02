@@ -1,6 +1,7 @@
 'use client'
 
 import { adminApi } from '@/shared/api/admin/admin-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { BookOpen, Calendar, Image as ImageIcon, User, X } from 'lucide-react'
 import Image from 'next/image'
@@ -152,7 +153,7 @@ export function PersonForm({
 						{photoPreview ? (
 							<>
 								<Image
-									src={photoPreview}
+									src={getImageUrl(photoPreview)}
 									alt='Photo preview'
 									fill
 									className='object-cover'
@@ -300,7 +301,7 @@ export function PersonForm({
 									<div className='relative w-10 h-14 rounded overflow-hidden bg-custom-dark'>
 										{cp.content?.posterUrl ? (
 											<Image
-												src={`${process.env.NEXT_PUBLIC_API_URL}${cp.content.posterUrl}`}
+												src={getImageUrl(cp.content.posterUrl)}
 												alt={cp.content.title}
 												fill
 												className='object-cover'

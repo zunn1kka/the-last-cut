@@ -1,6 +1,7 @@
 'use client'
 
 import { personsApi } from '@/shared/api/persons/persons-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import { Calendar, Clapperboard, Film, Star, Tv, User } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -150,7 +151,7 @@ export default function ActorPage() {
 						<div className='relative aspect-[3/4] rounded-xl overflow-hidden bg-custom-dark shadow-2xl'>
 							{person.photoUrl ? (
 								<Image
-									src={`${process.env.NEXT_PUBLIC_API_URL}${person.photoUrl}`}
+									src={getImageUrl(person.photoUrl)}
 									alt={person.fullname}
 									fill
 									className='object-cover'
@@ -273,7 +274,7 @@ export default function ActorPage() {
 											<div className='relative aspect-[2/3] overflow-hidden bg-custom-darker'>
 												{movie.content.posterUrl ? (
 													<Image
-														src={`${process.env.NEXT_PUBLIC_API_URL}${movie.content.posterUrl}`}
+														src={getImageUrl(movie.content.posterUrl)}
 														alt={movie.content.title}
 														fill
 														className='object-cover group-hover:scale-105 transition-transform duration-300'
@@ -331,7 +332,7 @@ export default function ActorPage() {
 											<div className='relative aspect-[2/3] overflow-hidden bg-custom-darker'>
 												{series.content.posterUrl ? (
 													<Image
-														src={`${process.env.NEXT_PUBLIC_API_URL}${series.content.posterUrl}`}
+														src={getImageUrl(series.content.posterUrl)}
 														alt={series.content.title}
 														fill
 														className='object-cover group-hover:scale-105 transition-transform duration-300'

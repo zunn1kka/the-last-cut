@@ -3,6 +3,7 @@
 import { useAuth } from '@/features/auth/model/auth-context'
 import { commentsApi } from '@/shared/api/comments/comments-api'
 import { ratingsApi } from '@/shared/api/ratings/ratings-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { Flag, Star, ThumbsDown, ThumbsUp } from 'lucide-react'
 import Image from 'next/image'
@@ -168,7 +169,7 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 						<div className='relative w-10 h-10 rounded-full overflow-hidden bg-custom-darker'>
 							{comment.user?.avatarUrl ? (
 								<Image
-									src={`${process.env.NEXT_PUBLIC_API_URL}${comment.user.avatarUrl}`}
+									src={getImageUrl(comment.user.avatarUrl)}
 									alt={comment.user.username}
 									fill
 									unoptimized={true}

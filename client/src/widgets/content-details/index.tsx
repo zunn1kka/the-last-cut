@@ -8,6 +8,7 @@ import {
 	watchStatusApi,
 	WatchStatus as WatchStatusType,
 } from '@/shared/api/watch-status/watch-status-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import {
 	Calendar,
 	CheckCircle,
@@ -184,7 +185,7 @@ export function ContentDetails({ content, contentType }: ContentDetailsProps) {
 					<div className='relative aspect-[2/3] rounded-xl overflow-hidden bg-custom-darker shadow-2xl'>
 						{content.posterUrl ? (
 							<Image
-								src={`${process.env.NEXT_PUBLIC_API_URL}${content.posterUrl}`}
+								src={getImageUrl(content.posterUrl)}
 								alt={content.title}
 								fill
 								className='object-cover'
@@ -396,7 +397,7 @@ export function ContentDetails({ content, contentType }: ContentDetailsProps) {
 									<div className='relative aspect-square overflow-hidden'>
 										{person.person.photoUrl ? (
 											<Image
-												src={`${process.env.NEXT_PUBLIC_API_URL}${person.person.photoUrl}`}
+												src={getImageUrl(person.person.photoUrl)}
 												alt={person.person.fullname}
 												fill
 												unoptimized={true}

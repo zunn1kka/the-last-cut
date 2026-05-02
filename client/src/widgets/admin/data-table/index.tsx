@@ -1,4 +1,5 @@
 'use client'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react'
 import Image from 'next/image'
@@ -109,7 +110,7 @@ export function DataTable({
 												{item[column.key] ? (
 													<div className='relative w-10 h-14'>
 														<Image
-															src={`${process.env.NEXT_PUBLIC_API_URL}${item[column.key]}`}
+															src={getImageUrl(item[column.key])}
 															alt={item.title || item.fullname || 'Изображение'}
 															unoptimized={true}
 															fill

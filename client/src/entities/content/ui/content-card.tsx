@@ -7,6 +7,7 @@ import {
 	collectionsApi,
 } from '@/shared/api/collections/collections-api'
 import { ratingsApi } from '@/shared/api/ratings/ratings-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { Film, FolderPlus, Heart, Star, Tv } from 'lucide-react'
 import Image from 'next/image'
@@ -169,7 +170,7 @@ export function ContentCard({
 					<div className='relative w-full pt-[150%] bg-custom-darker overflow-hidden'>
 						{cardData.posterUrl && !imageError ? (
 							<Image
-								src={`${process.env.NEXT_PUBLIC_API_URL}${cardData.posterUrl}`}
+								src={getImageUrl(cardData.posterUrl)}
 								alt={cardData.title}
 								fill
 								unoptimized={true}

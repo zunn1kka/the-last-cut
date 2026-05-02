@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/axios-instance'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import { Comments } from '@/widgets/comments'
 import { ContentDetails } from '@/widgets/content-details'
 import { Metadata } from 'next'
@@ -33,9 +34,7 @@ export async function generateMetadata({
 		openGraph: {
 			title: series.title,
 			description: series.description,
-			images: series.posterUrl
-				? [`${process.env.NEXT_PUBLIC_API_URL}${series.posterUrl}`]
-				: [],
+			images: series.posterUrl ? [`${getImageUrl(series.posterUrl)}`] : [],
 		},
 	}
 }
