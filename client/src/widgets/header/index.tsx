@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/features/auth/model/auth-context'
 import { notificationsApi } from '@/shared/api/notifications/notifications-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { Bell, Film, LogOut, Menu, Settings, Shield, X } from 'lucide-react'
 import Image from 'next/image'
@@ -157,7 +158,7 @@ export function Header() {
 									<div className='relative w-8 h-8 rounded-full overflow-hidden bg-gray-600'>
 										{user.avatarUrl ? (
 											<Image
-												src={`${process.env.NEXT_PUBLIC_API_URL}${user.avatarUrl}`}
+												src={getImageUrl(user.avatarUrl)}
 												alt={user.username}
 												fill
 												unoptimized={true}
