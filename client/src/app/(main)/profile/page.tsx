@@ -14,6 +14,7 @@ import {
 import { ratingsApi } from '@/shared/api/ratings/ratings-api'
 import { usersApi } from '@/shared/api/users/users-api'
 import { watchStatusApi } from '@/shared/api/watch-status/watch-status-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { Tabs } from '@/shared/ui/Tabs'
 import { EmailVerification } from '@/widgets/email-verification/ui/email-verification'
@@ -297,7 +298,7 @@ export default function ProfilePage() {
 										/>
 									) : user.avatarUrl ? (
 										<Image
-											src={`${process.env.NEXT_PUBLIC_API_URL}${user.avatarUrl}`}
+											src={getImageUrl(user.avatarUrl)}
 											alt={user.username}
 											fill
 											unoptimized={true}
