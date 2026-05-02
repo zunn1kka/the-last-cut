@@ -3,6 +3,7 @@
 import { useAuth } from '@/features/auth/model/auth-context'
 import { commentsApi } from '@/shared/api/comments/comments-api'
 import { ratingsApi } from '@/shared/api/ratings/ratings-api'
+import { formatRelativeTime } from '@/shared/lib/format-date'
 import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { Flag, Star, ThumbsDown, ThumbsUp } from 'lucide-react'
@@ -189,12 +190,7 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 								{comment.user?.username}
 							</Link>
 							<p className='text-xs text-gray-500'>
-								{new Date(comment.createdAt).toLocaleDateString('ru-RU', {
-									day: 'numeric',
-									month: 'long',
-									hour: '2-digit',
-									minute: '2-digit',
-								})}
+								{formatRelativeTime(comment.createdAt)}
 							</p>
 						</div>
 					</div>

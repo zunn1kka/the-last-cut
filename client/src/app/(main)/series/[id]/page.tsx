@@ -51,7 +51,6 @@ export default async function SeriesPage({ params }: PageProps) {
 		<>
 			<main className='bg-custom-darker min-h-screen py-12'>
 				<div className='container mx-auto px-4'>
-					{/* ContentDetails теперь отвечает за всё: основную информацию, актёров, эпизоды и жанры */}
 					<ContentDetails content={series} contentType='SERIES' />
 					<Comments contentId={series.id} contentType='SERIES' />
 				</div>
