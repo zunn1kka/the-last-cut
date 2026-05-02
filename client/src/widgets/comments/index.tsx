@@ -48,6 +48,14 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 			} else {
 				commentsData = []
 			}
+
+			if (commentsData.length > 0) {
+				console.log('Первый комментарий:', commentsData[0])
+				console.log('createdAt:', commentsData[0].createdAt)
+				console.log('updatedAt:', commentsData[0].updatedAt)
+				console.log('Тип createdAt:', typeof commentsData[0].createdAt)
+			}
+
 			setComments(commentsData)
 		} catch (error) {
 			console.error('Failed to fetch comments:', error)
@@ -191,8 +199,6 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 							</Link>
 							<p className='text-xs text-gray-500'>
 								{formatRelativeTime(comment.createdAt)}
-								console.log('createdAt:', comment.createdAt);
-								console.log('formatDate:', formatDate(comment.createdAt));
 							</p>
 						</div>
 					</div>
