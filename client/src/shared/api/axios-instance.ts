@@ -6,12 +6,9 @@ export const apiClient = axios.create({
 	headers: { 'Content-Type': 'application/json' },
 })
 
-// Переменная для хранения accessToken в памяти
 let accessToken: string | null = null
 
-// Флаг для предотвращения множественных запросов на обновление
 let isRefreshing = false
-// Очередь запросов, ожидающих обновления токена
 let failedQueue: any[] = []
 
 const processQueue = (error: any, token: string | null = null) => {
@@ -25,24 +22,21 @@ const processQueue = (error: any, token: string | null = null) => {
 	failedQueue = []
 }
 
-// Функция для установки токена
 export const setAccessToken = (token: string) => {
 	accessToken = token
-	console.log('📦 AccessToken сохранен в памяти')
+	console.log('AccessToken сохранен в памяти')
 }
 
-// ЗАГРУЗКА ТОКЕНА ИЗ LOCALSTORAGE ПРИ СТАРТЕ
 if (typeof window !== 'undefined') {
 	const savedToken = localStorage.getItem('accessToken')
 	if (savedToken) {
 		accessToken = savedToken
-		console.log('📦 Токен загружен из localStorage при старте')
+		console.log('Токен загружен из localStorage при старте')
 	}
 }
 
 // ========== REQUEST INTERCEPTOR ==========
 apiClient.interceptors.request.use(config => {
-	// Логирование запроса
 	console.log(
 		`🚀 API ${config.method?.toUpperCase()} ${config.url}`,
 		config.params,

@@ -54,7 +54,7 @@ export class AuthService {
         FileType.AVATAR,
       );
 
-      avatarUrl = saveAvatar.url || saveAvatar.path;
+      avatarUrl = saveAvatar.url;
     }
 
     const existsUserEmail = await this.prismaService.user.findUnique({

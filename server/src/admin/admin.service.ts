@@ -427,7 +427,6 @@ export class AdminService {
       await this.fileService.deleteFile(content.posterUrl);
     }
 
-    // 🔥 ОБНОВЛЯЕМ ПОЛЕ posterUrl В БД
     return this.prismaService.content.update({
       where: { id: contentId },
       data: { posterUrl: poster.url },
@@ -446,13 +445,11 @@ export class AdminService {
     userId: string,
   ) {
     const content = await this.prismaService.content.findUnique({
-      where: {
-        id: contentId,
-      },
+      where: { id: contentId },
     });
 
     if (!content) {
-      throw new NotFoundException('Фильм не найден');
+      throw new NotFoundException('Контент не найден');
     }
 
     const backdrop = await this.fileService.saveFile(
@@ -471,16 +468,10 @@ export class AdminService {
         movie: true,
         series: true,
         genres: { include: { genre: true } },
-        persons: {
-          include: {
-            person: true,
-            role: true,
-          },
-        },
+        persons: { include: { person: true, role: true } },
       },
     });
   }
-
   async uploadImages(
     contentId: string,
     userId: string,

@@ -46,19 +46,21 @@ export class UserService {
     dto: UpdateProfileDto,
     avatar?: Express.Multer.File,
   ) {
-    const userAvatar = await this.getProfile(userId);
-    let avatarUrl: string;
+    const userAvatar = await this.prismaService.user.findUnique({
+      where: { id: userId },
+      select: { avatarUrl: true },
+    });
+
+    let avatarUrl: string | undefined = undefined;
 
     if (avatar) {
       if (userAvatar?.avatarUrl) {
         await this.fileService.deleteFile(userAvatar.avatarUrl);
       }
-
       const saveAvatar = await this.fileService.saveFile(
         avatar,
         FileType.AVATAR,
       );
-
       avatarUrl = saveAvatar.url;
     }
 
@@ -78,11 +80,19 @@ export class UserService {
       data: {
         username: dto.username,
         bio: dto.bio,
-        avatarUrl,
         telegramId: dto.telegramId,
+        avatarUrl,
         updatedAt: new Date(),
       },
-      select: this.infoUser,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        avatarUrl: true,
+        bio: true,
+        telegramId: true,
+        role: true,
+      },
     });
 
     return { message: 'Профиль успешно обновлен', user };
