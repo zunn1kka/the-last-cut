@@ -30,11 +30,10 @@ export default function LoginPage() {
 				login(response.data.user)
 			}
 
-			// Перенаправляем на главную
-			router.push('/')
+			// Полная перезагрузка страницы для обновления всех компонентов
+			window.location.href = '/'
 		} catch (err: any) {
 			setError(err.response?.data?.message || 'Ошибка входа')
-		} finally {
 			setLoading(false)
 		}
 	}
