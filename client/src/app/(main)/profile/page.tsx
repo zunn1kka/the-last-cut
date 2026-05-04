@@ -32,7 +32,6 @@ import {
 	XCircle,
 } from 'lucide-react'
 
-// Импортируем модальные окна
 import { ChangeEmailModal } from '@/features/profile/ui/change-email-modal'
 import { ChangePasswordModal } from '@/features/profile/ui/change-password-modal'
 
@@ -739,10 +738,9 @@ export default function ProfilePage() {
 			<ChangeEmailModal
 				isOpen={showChangeEmail}
 				onClose={() => setShowChangeEmail(false)}
-				onSuccess={() => {
+				onSuccess={(newEmail: string) => {
+					updateUser({ email: newEmail })
 					alert('Email успешно изменён')
-					// Здесь можно обновить данные пользователя в контексте
-					updateUser({ email: 'новый email нужно получить из ответа' })
 				}}
 			/>
 
