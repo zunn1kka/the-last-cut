@@ -167,11 +167,7 @@ export default function AdminCommentsPage() {
 				</div>
 			),
 		},
-		{
-			key: 'createdAt',
-			label: 'Дата',
-			render: (item: Comment) => formatDate(item.createdAt),
-		},
+
 		{ key: 'actions', label: 'Действия', type: 'actions' },
 	]
 

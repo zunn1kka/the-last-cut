@@ -13,7 +13,6 @@ import {
 	Pencil,
 	Trash2,
 } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -189,22 +188,7 @@ export default function CollectionsPage() {
 											<div
 												key={item.id}
 												className='flex-1 aspect-[2/3] bg-custom-darker overflow-hidden'
-											>
-												{item.content.posterUrl ? (
-													<Image
-														src={`${process.env.NEXT_PUBLIC_API_URL}${item.content.posterUrl}`}
-														alt={item.content.title}
-														unoptimized={true}
-														className='w-full h-full object-cover'
-													/>
-												) : (
-													<div className='w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600'>
-														<span className='text-white text-xs text-center px-1'>
-															{item.content.title.slice(0, 20)}
-														</span>
-													</div>
-												)}
-											</div>
+											></div>
 										))}
 										{collection.items.length > 4 && (
 											<div className='flex-1 aspect-[2/3] bg-custom-darker flex items-center justify-center'>
