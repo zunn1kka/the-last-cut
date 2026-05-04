@@ -15,19 +15,17 @@ export const usersApi = {
 		})
 	},
 
-	changeEmail: (email: string, password: string) =>
-		apiClient.put('/users/change-email', { email, password }),
+	changeEmail: (data: { email: string; password: string }) => {
+		return apiClient.put('/users/change-email', data)
+	},
 
-	changePassword: (
-		currentPassword: string,
-		newPassword: string,
-		confirmPassword: string,
-	) =>
-		apiClient.put('/users/change-password', {
-			currentPassword,
-			newPassword,
-			confirmPassword,
-		}),
+	changePassword: (data: {
+		currentPassword: string
+		newPassword: string
+		confirmPassword: string
+	}) => {
+		return apiClient.put('/users/change-password', data)
+	},
 
 	deleteAccount: (password: string) =>
 		apiClient.delete('/users/delete-account', { data: { password } }),

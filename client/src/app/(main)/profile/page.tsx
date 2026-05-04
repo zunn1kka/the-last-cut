@@ -18,7 +18,6 @@ import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { Tabs } from '@/shared/ui/Tabs'
 import { EmailVerification } from '@/widgets/email-verification/ui/email-verification'
-import { Footer } from '@/widgets/footer'
 import {
 	Camera,
 	CheckCircle,
@@ -32,6 +31,10 @@ import {
 	X,
 	XCircle,
 } from 'lucide-react'
+
+// Импортируем модальные окна
+import { ChangeEmailModal } from '@/features/profile/ui/change-email-modal'
+import { ChangePasswordModal } from '@/features/profile/ui/change-password-modal'
 
 interface UserStats {
 	ratingsCount: number
@@ -103,6 +106,8 @@ export default function ProfilePage() {
 	const [activeTab, setActiveTab] = useState('ratings')
 	const [ratings, setRatings] = useState<any[]>([])
 	const [favorites, setFavorites] = useState<any[]>([])
+	const [showChangeEmail, setShowChangeEmail] = useState(false)
+	const [showChangePassword, setShowChangePassword] = useState(false)
 	const [watchStatuses, setWatchStatuses] = useState<WatchStatusItem[]>([])
 	const [collections, setCollections] = useState<Collection[]>([])
 	const [loading, setLoading] = useState(true)
@@ -258,7 +263,6 @@ export default function ProfilePage() {
 						<Button>Войти</Button>
 					</Link>
 				</main>
-				<Footer />
 			</>
 		)
 	}
@@ -417,6 +421,12 @@ export default function ProfilePage() {
 											<div className='flex items-center'>
 												<Mail className='w-4 h-4 mr-2' />
 												<span>{user.email}</span>
+												<button
+													onClick={() => setShowChangeEmail(true)}
+													className='text-xs text-blue-400 hover:text-blue-300 ml-2'
+												>
+													(сменить)
+												</button>
 											</div>
 
 											{user.bio && (
@@ -425,6 +435,14 @@ export default function ProfilePage() {
 													<p>{user.bio}</p>
 												</div>
 											)}
+
+											{/* Кнопка смены пароля */}
+											<button
+												onClick={() => setShowChangePassword(true)}
+												className='text-sm text-blue-400 hover:text-blue-300 transition-colors'
+											>
+												Сменить пароль
+											</button>
 										</div>
 									</>
 								)}
@@ -716,6 +734,25 @@ export default function ProfilePage() {
 					)}
 				</div>
 			</main>
+
+			{/* Модальные окна */}
+			<ChangeEmailModal
+				isOpen={showChangeEmail}
+				onClose={() => setShowChangeEmail(false)}
+				onSuccess={() => {
+					alert('Email успешно изменён')
+					// Здесь можно обновить данные пользователя в контексте
+					updateUser({ email: 'новый email нужно получить из ответа' })
+				}}
+			/>
+
+			<ChangePasswordModal
+				isOpen={showChangePassword}
+				onClose={() => setShowChangePassword(false)}
+				onSuccess={() => {
+					alert('Пароль успешно изменён')
+				}}
+			/>
 		</>
 	)
 }
