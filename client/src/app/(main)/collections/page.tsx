@@ -13,6 +13,7 @@ import {
 	Pencil,
 	Trash2,
 } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -190,9 +191,10 @@ export default function CollectionsPage() {
 												className='flex-1 aspect-[2/3] bg-custom-darker overflow-hidden'
 											>
 												{item.content.posterUrl ? (
-													<img
+													<Image
 														src={`${process.env.NEXT_PUBLIC_API_URL}${item.content.posterUrl}`}
 														alt={item.content.title}
+														unoptimized={true}
 														className='w-full h-full object-cover'
 													/>
 												) : (
