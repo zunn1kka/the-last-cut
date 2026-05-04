@@ -1,4 +1,4 @@
-import { Film, Github, Mail, Phone } from 'lucide-react'
+import { Film, Github, Mail } from 'lucide-react'
 import Link from 'next/link'
 
 export function Footer() {
@@ -50,14 +50,6 @@ export function Footer() {
 									Актеры
 								</Link>
 							</li>
-							<li>
-								<Link
-									href='/top'
-									className='text-gray-400 hover:text-white transition-colors'
-								>
-									Топ-250
-								</Link>
-							</li>
 						</ul>
 					</div>
 
@@ -69,34 +61,10 @@ export function Footer() {
 						<ul className='space-y-2'>
 							<li>
 								<Link
-									href='/about'
+									href='https://github.com/zunn1kka/the-last-cut'
 									className='text-gray-400 hover:text-white transition-colors'
 								>
 									О проекте
-								</Link>
-							</li>
-							<li>
-								<Link
-									href='/contact'
-									className='text-gray-400 hover:text-white transition-colors'
-								>
-									Контакты
-								</Link>
-							</li>
-							<li>
-								<Link
-									href='/privacy'
-									className='text-gray-400 hover:text-white transition-colors'
-								>
-									Политика конфиденциальности
-								</Link>
-							</li>
-							<li>
-								<Link
-									href='/terms'
-									className='text-gray-400 hover:text-white transition-colors'
-								>
-									Условия использования
 								</Link>
 							</li>
 						</ul>
@@ -112,13 +80,9 @@ export function Footer() {
 								<Mail className='w-4 h-4' />
 								<span>info@thelastcut.ru</span>
 							</li>
-							<li className='flex items-center space-x-3 text-gray-400'>
-								<Phone className='w-4 h-4' />
-								<span>+7 (999) 123-45-67</span>
-							</li>
 							<li className='pt-2'>
 								<a
-									href='https://github.com'
+									href='https://github.com/zunn1kka'
 									target='_blank'
 									rel='noopener noreferrer'
 									className='inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors'
