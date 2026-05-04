@@ -716,7 +716,6 @@ export default function ProfilePage() {
 					)}
 				</div>
 			</main>
-			<Footer />
 		</>
 	)
 }
