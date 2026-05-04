@@ -2,6 +2,7 @@
 
 import { adminApi } from '@/shared/api/admin/admin-api'
 import { AdminGuard } from '@/shared/components/admin/AdminGuard'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { DataTable } from '@/widgets/admin/data-table'
 import { Flag, MessageSquare } from 'lucide-react'
@@ -107,7 +108,7 @@ export default function AdminCommentsPage() {
 					<div className='relative w-8 h-12 rounded overflow-hidden bg-gray-200'>
 						{item.content?.posterUrl ? (
 							<Image
-								src={`${process.env.NEXT_PUBLIC_API_URL}${item.content.posterUrl}`}
+								src={getImageUrl(item.content.posterUrl)}
 								alt={item.content.title}
 								unoptimized={true}
 								fill
@@ -131,9 +132,10 @@ export default function AdminCommentsPage() {
 					<div className='relative w-6 h-6 rounded-full overflow-hidden bg-gray-200'>
 						{item.user?.avatarUrl ? (
 							<Image
-								src={`${process.env.NEXT_PUBLIC_API_URL}${item.user.avatarUrl}`}
+								src={getImageUrl(item.user.avatarUrl)}
 								alt={item.user.username}
 								fill
+								unoptimized={true}
 								className='object-cover'
 							/>
 						) : (
