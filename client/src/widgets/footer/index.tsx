@@ -61,7 +61,7 @@ export function Footer() {
 						<ul className='space-y-2'>
 							<li>
 								<Link
-									href='https://github.com/zunn1kka/the-last-cut'
+									href='/about'
 									className='text-gray-400 hover:text-white transition-colors'
 								>
 									О проекте
