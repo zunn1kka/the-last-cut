@@ -112,11 +112,6 @@ export default function AdminUsersPage() {
 				</span>
 			),
 		},
-		{
-			key: 'createdAt',
-			label: 'Дата регистрации',
-			render: (item: User) => formatDate(item.createdAt),
-		},
 		{ key: 'actions', label: 'Действия', type: 'actions' },
 	]
 
