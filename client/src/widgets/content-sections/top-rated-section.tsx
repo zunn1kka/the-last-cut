@@ -41,11 +41,5 @@ export function TopRatedSection() {
 		)
 	}
 
-	return (
-		<ContentCarousel
-			title='Лучшие по рейтингу'
-			items={items}
-			viewAllLink='/top-rated'
-		/>
-	)
+	return <ContentCarousel title='Лучшие по рейтингу' items={items} />
 }

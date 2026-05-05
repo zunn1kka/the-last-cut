@@ -41,5 +41,5 @@ export function NewReleasesSection() {
 		)
 	}
 
-	return <ContentCarousel title='Новинки' items={items} viewAllLink='/new' />
+	return <ContentCarousel title='Новинки' items={items} />
 }

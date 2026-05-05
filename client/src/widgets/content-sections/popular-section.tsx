@@ -42,12 +42,5 @@ export function PopularSection() {
 		)
 	}
 
-	return (
-		<ContentCarousel
-			title='Популярное'
-			items={items}
-			viewAllLink='/popular'
-			autoplay
-		/>
-	)
+	return <ContentCarousel title='Популярное' items={items} autoplay />
 }
