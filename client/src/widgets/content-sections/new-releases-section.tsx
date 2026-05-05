@@ -41,5 +41,5 @@ export function NewReleasesSection() {
 		)
 	}
 
-	return <ContentCarousel title='Новинки' items={items} />
+	return <ContentCarousel title='Новинки' items={items} autoplay />
 }

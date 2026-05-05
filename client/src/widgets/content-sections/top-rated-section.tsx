@@ -41,5 +41,5 @@ export function TopRatedSection() {
 		)
 	}
 
-	return <ContentCarousel title='Лучшие по рейтингу' items={items} />
+	return <ContentCarousel title='Лучшие по рейтингу' items={items} autoplay />
 }

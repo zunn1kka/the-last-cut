@@ -8,17 +8,19 @@ interface ContentCarouselProps {
 	title: string
 	items: any[]
 	viewAllLink?: string
+	autoplay?: boolean
+	autoplayDelay?: number
 }
 
 export function ContentCarousel({
 	title,
 	items,
 	viewAllLink,
+	autoplay = false,
+	autoplayDelay = 5000,
 }: ContentCarouselProps) {
 	const [currentPage, setCurrentPage] = useState(0)
 	const [itemsPerPage, setItemsPerPage] = useState(5)
-	const [touchStart, setTouchStart] = useState(0)
-	const [touchEnd, setTouchEnd] = useState(0)
 
 	useEffect(() => {
 		const updateItemsPerPage = () => {
@@ -33,6 +35,23 @@ export function ContentCarousel({
 		window.addEventListener('resize', updateItemsPerPage)
 		return () => window.removeEventListener('resize', updateItemsPerPage)
 	}, [])
+
+	// Автопрокрутка
+	useEffect(() => {
+		if (!autoplay || items.length === 0) return
+
+		const totalPages = Math.ceil(items.length / itemsPerPage)
+		if (totalPages <= 1) return
+
+		const interval = setInterval(() => {
+			setCurrentPage(prev => {
+				const total = Math.ceil(items.length / itemsPerPage)
+				return (prev + 1) % total
+			})
+		}, autoplayDelay)
+
+		return () => clearInterval(interval)
+	}, [autoplay, autoplayDelay, items.length, itemsPerPage])
 
 	const totalPages = Math.ceil(items.length / itemsPerPage)
 	const startIndex = currentPage * itemsPerPage
@@ -50,29 +69,10 @@ export function ContentCarousel({
 		}
 	}
 
-	const handleTouchStart = (e: React.TouchEvent) => {
-		setTouchStart(e.targetTouches[0].clientX)
+	if (!items || items.length === 0) {
+		console.log(`⚠️ Карусель "${title}" не отображается: нет элементов`)
+		return null
 	}
-
-	const handleTouchMove = (e: React.TouchEvent) => {
-		setTouchEnd(e.targetTouches[0].clientX)
-	}
-
-	const handleTouchEnd = () => {
-		if (!touchStart || !touchEnd) return
-
-		const distance = touchStart - touchEnd
-		const isLeftSwipe = distance > 50
-		const isRightSwipe = distance < -50
-
-		if (isLeftSwipe && currentPage < totalPages - 1) next()
-		if (isRightSwipe && currentPage > 0) prev()
-
-		setTouchStart(0)
-		setTouchEnd(0)
-	}
-
-	if (!items || items.length === 0) return null
 
 	return (
 		<section className='mb-12'>
@@ -88,12 +88,7 @@ export function ContentCarousel({
 				)}
 			</div>
 
-			<div
-				className='relative group px-4'
-				onTouchStart={handleTouchStart}
-				onTouchMove={handleTouchMove}
-				onTouchEnd={handleTouchEnd}
-			>
+			<div className='relative group px-4'>
 				<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4'>
 					{visibleItems.map(item => (
 						<div key={item.id} className='w-full'>

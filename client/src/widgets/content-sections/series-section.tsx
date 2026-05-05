@@ -41,5 +41,5 @@ export function SeriesSection() {
 		)
 	}
 
-	return <ContentCarousel title='Сериалы' items={items} />
+	return <ContentCarousel title='Сериалы' items={items} autoplay />
 }

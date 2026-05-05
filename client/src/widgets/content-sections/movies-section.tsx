@@ -41,5 +41,5 @@ export function MoviesSection() {
 		)
 	}
 
-	return <ContentCarousel title='Фильмы' items={items} viewAllLink='/movies' />
+	return <ContentCarousel title='Фильмы' items={items} autoplay />
 }
