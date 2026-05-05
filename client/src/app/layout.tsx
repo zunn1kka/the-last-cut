@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
 	title: 'The Last Cut',
-	description: 'Movie information platform',
+	description: 'Кино-портал для поиска и оценки фильмов',
+	viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
 }
 
 export default function RootLayout({
@@ -28,7 +29,7 @@ export default function RootLayout({
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
 				<Providers>
-					{children} {/* ← Здесь будут все страницы, каждая со своим layout */}
+					{children} {/*  Здесь будут все страницы, каждая со своим layout */}
 				</Providers>
 			</body>
 		</html>

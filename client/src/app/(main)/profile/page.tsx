@@ -284,10 +284,10 @@ export default function ProfilePage() {
 			<main className='bg-custom-darker min-h-screen py-8'>
 				<div className='container mx-auto px-4'>
 					{/* Шапка профиля */}
-					<div className='bg-custom-dark rounded-xl shadow-xl border border-gray-800 p-6 mb-8'>
-						<div className='flex flex-col md:flex-row items-start md:items-center gap-6'>
+					<div className='bg-custom-dark rounded-xl shadow-xl border border-gray-800 p-4 md:p-6 mb-8'>
+						<div className='flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6'>
 							{/* Аватар */}
-							<div className='relative'>
+							<div className='relative flex-shrink-0'>
 								<div
 									onClick={handleAvatarClick}
 									className='relative w-24 h-24 rounded-full overflow-hidden bg-custom-darker cursor-pointer group ring-2 ring-gray-700 hover:ring-blue-500 transition-all'
@@ -343,7 +343,7 @@ export default function ProfilePage() {
 							</div>
 
 							{/* Информация */}
-							<div className='flex-1'>
+							<div className='flex-1 w-full md:w-auto'>
 								{isEditing ? (
 									<form onSubmit={handleUpdateProfile} className='space-y-4'>
 										<div>
@@ -448,27 +448,27 @@ export default function ProfilePage() {
 							</div>
 
 							{/* Статистика */}
-							<div className='flex md:flex-col gap-4 md:gap-2'>
-								<div className='text-center px-4 py-2 bg-custom-darker rounded-lg border border-gray-800'>
-									<div className='text-2xl font-bold text-white'>
+							<div className='grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto'>
+								<div className='text-center px-3 py-2 bg-custom-darker rounded-lg border border-gray-800'>
+									<div className='text-xl md:text-2xl font-bold text-white'>
 										{stats.ratingsCount}
 									</div>
 									<div className='text-xs text-gray-500'>Оценок</div>
 								</div>
-								<div className='text-center px-4 py-2 bg-custom-darker rounded-lg border border-gray-800'>
-									<div className='text-2xl font-bold text-white'>
+								<div className='text-center px-3 py-2 bg-custom-darker rounded-lg border border-gray-800'>
+									<div className='text-xl md:text-2xl font-bold text-white'>
 										{stats.favoritesCount}
 									</div>
 									<div className='text-xs text-gray-500'>В избранном</div>
 								</div>
-								<div className='text-center px-4 py-2 bg-custom-darker rounded-lg border border-gray-800'>
-									<div className='text-2xl font-bold text-white'>
+								<div className='text-center px-3 py-2 bg-custom-darker rounded-lg border border-gray-800'>
+									<div className='text-xl md:text-2xl font-bold text-white'>
 										{stats.watchStatusCount}
 									</div>
 									<div className='text-xs text-gray-500'>Статусов</div>
 								</div>
-								<div className='text-center px-4 py-2 bg-custom-darker rounded-lg border border-gray-800'>
-									<div className='text-2xl font-bold text-white'>
+								<div className='text-center px-3 py-2 bg-custom-darker rounded-lg border border-gray-800'>
+									<div className='text-xl md:text-2xl font-bold text-white'>
 										{stats.collectionsCount}
 									</div>
 									<div className='text-xs text-gray-500'>Сборников</div>
