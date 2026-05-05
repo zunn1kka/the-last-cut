@@ -141,14 +141,14 @@ export default function AboutPage() {
 
 				{/* Контакты и ссылки */}
 				<div className='text-center text-gray-500 text-sm'>
-					<p>© 2025 The Last Cut. Дипломный проект.</p>
+					<p>© 2026 The Last Cut. Дипломный проект.</p>
 					<p className='mt-2'>
 						По всем вопросам:{' '}
 						<a
 							href='mailto:support@thelastcut.ru'
 							className='text-blue-400 hover:text-blue-300'
 						>
-							support@thelastcut.ru
+							info@thelastcut.ru
 						</a>
 					</p>
 				</div>
