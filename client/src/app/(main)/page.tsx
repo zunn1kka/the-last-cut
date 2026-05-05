@@ -1,13 +1,14 @@
 'use client'
 
 import { useAuth } from '@/features/auth/model/auth-context'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import { MoviesSection } from '@/widgets/content-sections/movies-section'
 import { NewReleasesSection } from '@/widgets/content-sections/new-releases-section'
 import { PopularSection } from '@/widgets/content-sections/popular-section'
 import { SeriesSection } from '@/widgets/content-sections/series-section'
 import { TopRatedSection } from '@/widgets/content-sections/top-rated-section'
 import { motion } from 'framer-motion'
-import { ArrowRight, Film, Sparkles, Star, TrendingUp } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -42,7 +43,7 @@ export default function Home() {
 									<div className='relative w-10 h-10 rounded-full overflow-hidden bg-linear-to-r from-blue-500 to-purple-500 flex items-center justify-center'>
 										{user.avatarUrl ? (
 											<Image
-												src={`${process.env.NEXT_PUBLIC_API_URL}${user.avatarUrl}`}
+												src={getImageUrl(user.avatarUrl)}
 												alt={user.username}
 												fill
 												className='object-cover'
@@ -77,35 +78,6 @@ export default function Home() {
 							</div>
 						</motion.div>
 					)}
-
-					{/* Быстрые фильтры */}
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.2 }}
-						className='mb-12 flex flex-wrap gap-3 justify-center'
-					>
-						{[
-							{ label: 'Всё', icon: Sparkles, active: true },
-							{ label: 'Новинки', icon: Film },
-							{ label: 'Популярное', icon: TrendingUp },
-							{ label: 'Топ-250', icon: Star },
-						].map(filter => (
-							<button
-								key={filter.label}
-								className={`px-4 py-2 rounded-full transition-all duration-300 ${
-									filter.active
-										? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-										: 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-								}`}
-							>
-								<span className='flex items-center gap-2'>
-									<filter.icon className='w-4 h-4' />
-									{filter.label}
-								</span>
-							</button>
-						))}
-					</motion.div>
 
 					{/* Секции с контентом */}
 					<div className='space-y-20'>
