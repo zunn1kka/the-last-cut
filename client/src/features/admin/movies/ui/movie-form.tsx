@@ -42,7 +42,7 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 	)
 	const [backdropFile, setBackdropFile] = useState<File | null>(null)
 	const [backdropPreview, setBackdropPreview] = useState<string | null>(
-		initialData?.backdropUrl ? `${getImageUrl(initialData.backdrop)}` : null,
+		initialData?.backdropUrl ? `${getImageUrl(initialData.backdropUrl)}` : null,
 	)
 
 	const [formData, setFormData] = useState({
