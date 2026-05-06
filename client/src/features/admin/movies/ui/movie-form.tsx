@@ -4,6 +4,7 @@ import { adminApi } from '@/shared/api/admin/admin-api'
 import { genreApi } from '@/shared/api/genres/genre-api'
 import { personRolesApi } from '@/shared/api/person-roles/person-roles-api'
 import { personsApi } from '@/shared/api/persons/persons-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { Image as ImageIcon, Plus, Search, X } from 'lucide-react'
 import Image from 'next/image'
@@ -37,15 +38,11 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 
 	const [posterFile, setPosterFile] = useState<File | null>(null)
 	const [posterPreview, setPosterPreview] = useState<string | null>(
-		initialData?.posterUrl
-			? `${process.env.NEXT_PUBLIC_API_URL}${initialData.posterUrl}`
-			: null,
+		initialData?.posterUrl ? `${getImageUrl(initialData.posterUrl)}` : null,
 	)
 	const [backdropFile, setBackdropFile] = useState<File | null>(null)
 	const [backdropPreview, setBackdropPreview] = useState<string | null>(
-		initialData?.backdropUrl
-			? `${process.env.NEXT_PUBLIC_API_URL}${initialData.backdropUrl}`
-			: null,
+		initialData?.backdropUrl ? `${getImageUrl(initialData.backdrop)}` : null,
 	)
 
 	const [formData, setFormData] = useState({
