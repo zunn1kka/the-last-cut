@@ -324,30 +324,6 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 					onSubmit={handleSubmit}
 					className='mb-8 bg-custom-dark rounded-xl border border-gray-800 p-6'
 				>
-					<div className='mb-4'>
-						<label className='block text-sm font-medium text-gray-300 mb-2'>
-							Ваша оценка (необязательно)
-						</label>
-						<div className='flex items-center gap-2 flex-wrap'>
-							{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(value => (
-								<button
-									key={value}
-									type='button'
-									onClick={() => setRating(rating === value ? null : value)}
-									className='focus:outline-none'
-								>
-									<Star
-										className={`w-6 h-6 transition-colors ${
-											rating === value
-												? 'fill-yellow-500 text-yellow-500'
-												: 'text-gray-600 hover:text-gray-500'
-										}`}
-									/>
-								</button>
-							))}
-						</div>
-					</div>
-
 					<textarea
 						value={newComment}
 						onChange={e => setNewComment(e.target.value)}

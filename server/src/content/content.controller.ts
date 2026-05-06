@@ -119,12 +119,6 @@ export class ContentController {
     return await this.seriesService.findOne(seriesId);
   }
 
-  // @Get('search')
-  // @ApiOperation({ summary: 'Search content' })
-  // async search(@Query('q') query: string) {
-  //   return this.contentService.search(query);
-  // }
-
   @Get('/movies')
   async findAllMovie() {
     return await this.movieService.findAll();
