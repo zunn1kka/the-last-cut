@@ -22,6 +22,7 @@ export function Header() {
 		{ href: '/movies', label: 'Фильмы' },
 		{ href: '/series', label: 'Сериалы' },
 		{ href: '/actors', label: 'Актеры' },
+		{ href: '/collections', label: 'Сборники' },
 	]
 
 	useEffect(() => {
