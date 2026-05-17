@@ -1,41 +1,22 @@
-// client/middleware.ts
-import type { NextRequest } from 'next/server'
-import { NextResponse } from 'next/server'
-
-const protectedRoutes = ['/profile', '/collections']
+import { NextResponse, type NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-	const { pathname } = request.nextUrl
+	const token = request.cookies.get('accessToken')?.value
+	const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
+	const isAuthRoute =
+		request.nextUrl.pathname.startsWith('/login') ||
+		request.nextUrl.pathname.startsWith('/register')
 
-	const accessToken = request.cookies.get('accessToken')?.value
-	const refreshToken = request.cookies.get('refreshToken')?.value
-	const isAuthenticated = !!accessToken || !!refreshToken
-
-	console.log('🔍 [Middleware]', {
-		pathname,
-		isAuthenticated,
-		hasAccessToken: !!accessToken,
-		hasRefreshToken: !!refreshToken,
-	})
-
-	// ✅ Главная страница - доступна всем, НЕ редиректим
-	if (pathname === '/') {
-		console.log('🏠 Главная страница - пропускаем')
-		return NextResponse.next()
+	if (isAdminRoute && !token) {
+		return NextResponse.redirect(new URL('/login', request.url))
 	}
 
-	const isProtectedRoute = protectedRoutes.some(route =>
-		pathname.startsWith(route),
-	)
-
-	if (isProtectedRoute && !isAuthenticated) {
-		console.log('🔒 Редирект на логин:', pathname)
-		return NextResponse.redirect(new URL('/login', request.url))
+	if (isAuthRoute && token) {
+		return NextResponse.redirect(new URL('/', request.url))
 	}
 
 	return NextResponse.next()
 }
-
 export const config = {
 	matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }
