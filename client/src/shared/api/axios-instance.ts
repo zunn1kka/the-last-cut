@@ -3,151 +3,94 @@ import axios from 'axios'
 export const apiClient = axios.create({
 	baseURL: process.env.NEXT_PUBLIC_API_URL,
 	withCredentials: true,
-	headers: { 'Content-Type': 'application/json' },
+	headers: {
+		'Content-Type': 'application/json',
+	},
 })
 
-let accessToken: string | null = null
-
 let isRefreshing = false
-let failedQueue: any[] = []
+let failedQueue: Array<{
+	resolve: (value?: unknown) => void
+	reject: (reason?: unknown) => void
+}> = []
 
-const processQueue = (error: any, token: string | null = null) => {
-	failedQueue.forEach(prom => {
+const processQueue = (error: Error | null, token: string | null = null) => {
+	failedQueue.forEach(promise => {
 		if (error) {
-			prom.reject(error)
+			promise.reject(error)
 		} else {
-			prom.resolve(token)
+			promise.resolve(token)
 		}
 	})
 	failedQueue = []
 }
 
-export const setAccessToken = (token: string) => {
-	accessToken = token
-	console.log('AccessToken сохранен в памяти')
-}
-
-if (typeof window !== 'undefined') {
-	const savedToken = localStorage.getItem('accessToken')
-	if (savedToken) {
-		accessToken = savedToken
-		console.log('Токен загружен из localStorage при старте')
-	}
-}
-
-// ========== REQUEST INTERCEPTOR ==========
-apiClient.interceptors.request.use(config => {
-	console.log(
-		`🚀 API ${config.method?.toUpperCase()} ${config.url}`,
-		config.params,
-	)
-
-	// Пропускаем запрос на обновление токена
-	if (config.url?.includes('/auth/refresh')) {
-		return config
-	}
-
-	// Добавляем токен, если есть
-	if (accessToken) {
-		config.headers.Authorization = `Bearer ${accessToken}`
-	}
-
-	return config
-})
-
-// ========== RESPONSE INTERCEPTOR ==========
-apiClient.interceptors.response.use(
-	response => {
-		console.log(`✅ Успех:`, response.status, response.config.url)
-
-		// Если в ответе есть accessToken - сохраняем
-		if (response.data?.accessToken) {
-			console.log('📦 Получен новый accessToken')
-			accessToken = response.data.accessToken
-			localStorage.setItem('accessToken', response.data.accessToken)
+apiClient.interceptors.request.use(
+	config => {
+		const token = localStorage.getItem('accessToken')
+		if (token) {
+			config.headers.Authorization = `Bearer ${token}`
 		}
-
-		return response
+		return config
 	},
+	error => Promise.reject(error),
+)
+
+apiClient.interceptors.response.use(
+	response => response,
 	async error => {
 		const originalRequest = error.config
 
-		// Если нет originalRequest или это запрос на обновление - просто reject
-		if (!originalRequest || originalRequest.url?.includes('/auth/refresh')) {
+		// Если ошибка не 401 или запрос уже был повторён - отклоняем
+		if (error.response?.status !== 401 || originalRequest._retry) {
 			return Promise.reject(error)
 		}
 
-		// Если ошибка не 401 - просто reject
-		if (error.response?.status !== 401) {
+		if (originalRequest.url?.includes('/auth/refresh')) {
 			return Promise.reject(error)
 		}
 
-		// Если уже пробовали обновить - reject
-		if (originalRequest._retry) {
-			// Очищаем токены и перенаправляем на логин
-			accessToken = null
+		originalRequest._retry = true
+
+		if (isRefreshing) {
+			return new Promise((resolve, reject) => {
+				failedQueue.push({ resolve, reject })
+			})
+				.then(() => {
+					const token = localStorage.getItem('accessToken')
+					originalRequest.headers.Authorization = `Bearer ${token}`
+					return apiClient(originalRequest)
+				})
+				.catch(err => Promise.reject(err))
+		}
+
+		isRefreshing = true
+
+		try {
+			const response = await apiClient.post('/auth/refresh')
+			const { accessToken } = response.data
+
+			if (accessToken) {
+				localStorage.setItem('accessToken', accessToken)
+				processQueue(null, accessToken)
+				originalRequest.headers.Authorization = `Bearer ${accessToken}`
+				return apiClient(originalRequest)
+			} else {
+				throw new Error('No access token received')
+			}
+		} catch (refreshError) {
 			localStorage.removeItem('accessToken')
+			processQueue(refreshError as Error, null)
 
 			if (
-				typeof window !== 'undefined' &&
-				!window.location.pathname.includes('/login')
+				!window.location.pathname.includes('/login') &&
+				!window.location.pathname.includes('/register')
 			) {
-				console.log('🔄 Перенаправление на логин...')
 				window.location.href = '/login'
 			}
-			return Promise.reject(error)
+			return Promise.reject(refreshError)
+		} finally {
+			isRefreshing = false
 		}
-
-		// Пробуем обновить токен
-		if (!isRefreshing) {
-			isRefreshing = true
-			originalRequest._retry = true
-
-			try {
-				console.log('🔄 Пробуем обновить токен...')
-				const response = await apiClient.post('/auth/refresh')
-
-				if (response.data?.accessToken) {
-					console.log('✅ Токен обновлен')
-					accessToken = response.data.accessToken
-					localStorage.setItem('accessToken', response.data.accessToken)
-
-					processQueue(null, accessToken)
-
-					// Повторяем исходный запрос
-					originalRequest.headers.Authorization = `Bearer ${accessToken}`
-					return apiClient(originalRequest)
-				}
-			} catch (refreshError) {
-				console.log('❌ Не удалось обновить токен')
-				processQueue(refreshError, null)
-
-				// Очищаем токены
-				accessToken = null
-				localStorage.removeItem('accessToken')
-
-				// Перенаправляем на логин
-				if (
-					typeof window !== 'undefined' &&
-					!window.location.pathname.includes('/login')
-				) {
-					window.location.href = '/login'
-				}
-
-				return Promise.reject(refreshError)
-			} finally {
-				isRefreshing = false
-			}
-		}
-
-		// Если уже обновляем - добавляем в очередь
-		return new Promise((resolve, reject) => {
-			failedQueue.push({ resolve, reject })
-		})
-			.then(token => {
-				originalRequest.headers.Authorization = `Bearer ${token}`
-				return apiClient(originalRequest)
-			})
-			.catch(err => Promise.reject(err))
 	},
 )
