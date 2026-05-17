@@ -29,7 +29,6 @@ export function RatingStars({
 		lg: 'w-6 h-6',
 	}
 
-	// Синхронизация с initialRating
 	useEffect(() => {
 		setRating(initialRating || null)
 	}, [initialRating])

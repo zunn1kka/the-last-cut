@@ -5,22 +5,30 @@ import { authApi } from '@/shared/api/auth/auth-api'
 import Button from '@/shared/ui/Button'
 import { Film, Lock, Mail } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function LoginPage() {
 	const router = useRouter()
+	const searchParams = useSearchParams()
 	const { login } = useAuth()
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
+	const [success, setSuccess] = useState('')
 	const [error, setError] = useState('')
 	const [loading, setLoading] = useState(false)
+
+	useEffect(() => {
+		if (searchParams.get('registered') === 'true') {
+			setSuccess('Регистрация прошла успешно! Теперь вы можете войти.')
+		}
+	}, [searchParams])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setLoading(true)
 		setError('')
-
+		setSuccess('')
 		try {
 			const response = await authApi.login({ email, password })
 			console.log('📥 Ответ от сервера:', response.data)
