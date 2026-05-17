@@ -25,6 +25,9 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 	failedQueue = []
 }
 
+// Массив маршрутов, для которых не нужно перенаправлять на логин
+const publicRoutes = ['/', '/movies', '/series', '/actors', '/top', '/about']
+
 apiClient.interceptors.request.use(
 	config => {
 		const token = localStorage.getItem('accessToken')
@@ -46,7 +49,8 @@ apiClient.interceptors.response.use(
 			return Promise.reject(error)
 		}
 
-		if (originalRequest.url?.includes('/auth/refresh')) {
+		// Для запросов к auth не пытаемся обновлять токен
+		if (originalRequest.url?.includes('/auth/')) {
 			return Promise.reject(error)
 		}
 
@@ -82,9 +86,17 @@ apiClient.interceptors.response.use(
 			localStorage.removeItem('accessToken')
 			processQueue(refreshError as Error, null)
 
+			// Проверяем, не является ли текущий путь публичным
+			const currentPath = window.location.pathname
+			const isPublicRoute = publicRoutes.some(
+				route => currentPath === route || currentPath.startsWith(route + '/'),
+			)
+
+			// Перенаправляем только если текущий путь не публичный
 			if (
-				!window.location.pathname.includes('/login') &&
-				!window.location.pathname.includes('/register')
+				!isPublicRoute &&
+				!currentPath.includes('/login') &&
+				!currentPath.includes('/register')
 			) {
 				window.location.href = '/login'
 			}
