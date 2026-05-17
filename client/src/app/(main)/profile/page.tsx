@@ -3,7 +3,7 @@
 import { useAuth } from '@/features/auth/model/auth-context'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { ContentCard } from '@/entities/content/ui/content-card'
 import { bookmarksApi } from '@/shared/api/bookmarks/bookmark-api'
@@ -91,6 +91,12 @@ const statusLabels: Record<
 export default function ProfilePage() {
 	const { user, updateUser, logout } = useAuth()
 	const [isEditing, setIsEditing] = useState(false)
+	const [favoriteSortBy, setFavoriteSortBy] = useState<
+		'date' | 'title' | 'rating'
+	>('date')
+	const [favoriteSortOrder, setFavoriteSortOrder] = useState<'asc' | 'desc'>(
+		'desc',
+	)
 	const [isChangingAvatar, setIsChangingAvatar] = useState(false)
 	const [avatarFile, setAvatarFile] = useState<File | null>(null)
 	const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
@@ -114,6 +120,41 @@ export default function ProfilePage() {
 		username: user?.username || '',
 		bio: user?.bio || '',
 	})
+
+	const sortedFavorites = useMemo(() => {
+		const sorted = [...favorites]
+
+		switch (favoriteSortBy) {
+			case 'date':
+				sorted.sort((a, b) => {
+					const dateA = new Date(a.createdAt || a.content?.createdAt || 0)
+					const dateB = new Date(b.createdAt || b.content?.createdAt || 0)
+					return favoriteSortOrder === 'desc'
+						? dateB.getTime() - dateA.getTime()
+						: dateA.getTime() - dateB.getTime()
+				})
+				break
+			case 'title':
+				sorted.sort((a, b) => {
+					const titleA = (a.content?.title || a.title || '').toLowerCase()
+					const titleB = (b.content?.title || b.title || '').toLowerCase()
+					return favoriteSortOrder === 'desc'
+						? titleB.localeCompare(titleA)
+						: titleA.localeCompare(titleB)
+				})
+				break
+			case 'rating':
+				sorted.sort((a, b) => {
+					const ratingA = a.content?.siteRating || 0
+					const ratingB = b.content?.siteRating || 0
+					return favoriteSortOrder === 'desc'
+						? ratingB - ratingA
+						: ratingA - ratingB
+				})
+				break
+		}
+		return sorted
+	}, [favorites, favoriteSortBy, favoriteSortOrder])
 
 	useEffect(() => {
 		if (user) {
@@ -525,9 +566,39 @@ export default function ProfilePage() {
 
 							{activeTab === 'favorites' && (
 								<div>
-									{favorites.length > 0 ? (
+									{/* Панель сортировки */}
+									<div className='flex gap-4 mb-6 justify-end'>
+										<div className='flex items-center gap-2'>
+											<span className='text-sm text-gray-400'>
+												Сортировать по:
+											</span>
+											<select
+												value={favoriteSortBy}
+												onChange={e => setFavoriteSortBy(e.target.value as any)}
+												className='px-3 py-1 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm'
+											>
+												<option value='date'>Дате добавления</option>
+												<option value='title'>Названию</option>
+												<option value='rating'>Рейтингу</option>
+											</select>
+											<button
+												onClick={() =>
+													setFavoriteSortOrder(
+														favoriteSortOrder === 'desc' ? 'asc' : 'desc',
+													)
+												}
+												className='px-3 py-1 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm hover:bg-gray-700 transition'
+											>
+												{favoriteSortOrder === 'desc'
+													? '↓ По убыванию'
+													: '↑ По возрастанию'}
+											</button>
+										</div>
+									</div>
+
+									{sortedFavorites.length > 0 ? (
 										<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4'>
-											{favorites.map((item: any) => (
+											{sortedFavorites.map((item: any) => (
 												<ContentCard
 													key={item.contentId}
 													content={item.content}
