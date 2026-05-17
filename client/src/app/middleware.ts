@@ -1,22 +1,33 @@
-import { NextResponse, type NextRequest } from 'next/server'
+// client/middleware.ts
+import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
+
+const protectedRoutes = ['/profile', '/collections']
+
+const adminRoutes = ['/admin']
+const moderatorRoutes = ['/admin/comments', '/admin/reports']
 
 export function middleware(request: NextRequest) {
-	const token = request.cookies.get('accessToken')?.value
-	const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
-	const isAuthRoute =
-		request.nextUrl.pathname.startsWith('/login') ||
-		request.nextUrl.pathname.startsWith('/register')
+	const { pathname } = request.nextUrl
+	const token =
+		request.cookies.get('accessToken')?.value ||
+		localStorage.getItem('accessToken')
 
-	if (isAdminRoute && !token) {
+	const isProtectedRoute = protectedRoutes.some(route =>
+		pathname.startsWith(route),
+	)
+	const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route))
+	const isModeratorRoute = moderatorRoutes.some(route =>
+		pathname.startsWith(route),
+	)
+
+	if (isProtectedRoute && !token) {
 		return NextResponse.redirect(new URL('/login', request.url))
-	}
-
-	if (isAuthRoute && token) {
-		return NextResponse.redirect(new URL('/', request.url))
 	}
 
 	return NextResponse.next()
 }
+
 export const config = {
-	matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+	matcher: ['/profile/:path*', '/collections/:path*', '/admin/:path*'],
 }
