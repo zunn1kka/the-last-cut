@@ -129,7 +129,6 @@ export default function AdminUsersPage() {
 					data={users}
 					columns={columns}
 					loading={loading}
-					onEdit={id => `/admin/users/${id}`}
 					onDelete={handleDelete}
 				/>
 			</div>
