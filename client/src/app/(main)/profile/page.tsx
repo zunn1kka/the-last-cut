@@ -762,7 +762,7 @@ export default function ProfilePage() {
 																>
 																	{item.content.posterUrl ? (
 																		<img
-																			src={`${process.env.NEXT_PUBLIC_API_URL}${item.content.posterUrl}`}
+																			src={getImageUrl(item.content.posterUrl)}
 																			alt={item.content.title}
 																			className='w-full h-full object-cover'
 																		/>
