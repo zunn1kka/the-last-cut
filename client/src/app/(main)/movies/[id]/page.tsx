@@ -1,5 +1,3 @@
-import { apiClient } from '@/shared/api/axios-instance'
-import { getImageUrl } from '@/shared/lib/get-image-url'
 import { Comments } from '@/widgets/comments'
 import { ContentDetails } from '@/widgets/content-details'
 import { Metadata } from 'next'
@@ -10,10 +8,31 @@ interface PageProps {
 }
 
 async function getMovie(id: string) {
+	const apiUrl = process.env.NEXT_PUBLIC_API_URL
+	if (!apiUrl) {
+		console.error('NEXT_PUBLIC_API_URL is not set')
+		return null
+	}
+
 	try {
-		const response = await apiClient.get(`/content/movies/${id}`)
-		return response.data
+		// Используем fetch вместо apiClient
+		const response = await fetch(`${apiUrl}/content/movies/${id}`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			// Важно: не кешируем данные для динамических страниц
+			cache: 'no-store',
+		})
+
+		if (!response.ok) {
+			console.error(`API returned ${response.status} for movie ${id}`)
+			return null
+		}
+
+		return response.json()
 	} catch (error) {
+		console.error('Failed to fetch movie:', error)
 		return null
 	}
 }
@@ -31,13 +50,11 @@ export async function generateMetadata({
 	return {
 		title: `${movie.title} | The Last Cut`,
 		description: movie.description,
-		openGraph: {
-			title: movie.title,
-			description: movie.description,
-			images: movie.posterUrl ? [`${getImageUrl(movie.posterUrl)}`] : [],
-		},
 	}
 }
+
+// Важно: отключаем статическую генерацию для этой страницы
+export const dynamic = 'force-dynamic'
 
 export default async function MoviePage({ params }: PageProps) {
 	const { id } = await params
@@ -48,13 +65,11 @@ export default async function MoviePage({ params }: PageProps) {
 	}
 
 	return (
-		<>
-			<main className='bg-custom-darker min-h-screen py-12'>
-				<div className='container mx-auto px-4'>
-					<ContentDetails content={movie} contentType='MOVIE' />
-					<Comments contentId={movie.id} contentType='MOVIE' />
-				</div>
-			</main>
-		</>
+		<main className='bg-custom-darker min-h-screen py-12'>
+			<div className='container mx-auto px-4'>
+				<ContentDetails content={movie} contentType='MOVIE' />
+				<Comments contentId={movie.id} contentType='MOVIE' />
+			</div>
+		</main>
 	)
 }
