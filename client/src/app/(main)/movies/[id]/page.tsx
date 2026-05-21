@@ -1,3 +1,4 @@
+'use client'
 import { apiClient } from '@/shared/api/axios-instance'
 import { getImageUrl } from '@/shared/lib/get-image-url'
 import { Comments } from '@/widgets/comments'
