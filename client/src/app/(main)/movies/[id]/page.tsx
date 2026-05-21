@@ -1,3 +1,5 @@
+import { apiClient } from '@/shared/api/axios-instance'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import { Comments } from '@/widgets/comments'
 import { ContentDetails } from '@/widgets/content-details'
 import { Metadata } from 'next'
@@ -8,15 +10,10 @@ interface PageProps {
 }
 
 async function getMovie(id: string) {
-	const baseURL = process.env.NEXT_PUBLIC_API_URL
 	try {
-		const response = await fetch(`${baseURL}/content/movies/${id}`, {
-			cache: 'no-store',
-		})
-		if (!response.ok) return null
-		return response.json()
+		const response = await apiClient.get(`/content/movies/${id}`)
+		return response.data
 	} catch (error) {
-		console.error('Failed to fetch movie:', error)
 		return null
 	}
 }
@@ -37,9 +34,7 @@ export async function generateMetadata({
 		openGraph: {
 			title: movie.title,
 			description: movie.description,
-			images: movie.posterUrl
-				? [`${process.env.NEXT_PUBLIC_API_URL}${movie.posterUrl}`]
-				: [],
+			images: movie.posterUrl ? [`${getImageUrl(movie.posterUrl)}`] : [],
 		},
 	}
 }
@@ -53,11 +48,13 @@ export default async function MoviePage({ params }: PageProps) {
 	}
 
 	return (
-		<main className='bg-custom-darker min-h-screen py-12'>
-			<div className='container mx-auto px-4'>
-				<ContentDetails content={movie} contentType='MOVIE' />
-				<Comments contentId={movie.id} contentType='MOVIE' />
-			</div>
-		</main>
+		<>
+			<main className='bg-custom-darker min-h-screen py-12'>
+				<div className='container mx-auto px-4'>
+					<ContentDetails content={movie} contentType='MOVIE' />
+					<Comments contentId={movie.id} contentType='MOVIE' />
+				</div>
+			</main>
+		</>
 	)
 }
