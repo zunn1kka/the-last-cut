@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/shared/lib/cn'
+import { cn } from '@/shared/lib/helpers'
 import { ButtonHTMLAttributes, ReactNode } from 'react'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
