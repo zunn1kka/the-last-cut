@@ -16,17 +16,21 @@ interface Movie {
 	description: string
 	releaseYear: number
 	posterUrl: string
+	backdropUrl: string | null
 	imdbRating: number | null
 	kinopoiskRating: number | null
 	siteRating: number | null
 	ageRating: string | null
+	contentType: 'MOVIE' | 'SERIES'
 	movie?: {
 		duration: number | null
+		budget: number | null
 	}
 	genres?: Array<{
 		genre: {
 			id: string
 			name: string
+			slug: string
 		}
 	}>
 	persons?: Array<{
@@ -36,6 +40,9 @@ interface Movie {
 			photoUrl: string | null
 		}
 		roleName: string | null
+		role?: {
+			name: string
+		}
 	}>
 }
 
@@ -49,6 +56,7 @@ export default function MoviePage() {
 			setLoading(true)
 			try {
 				const response = await contentApi.getById(id as string)
+				console.log('📥 Movie data:', response.data)
 				setMovie(response.data)
 			} catch (error) {
 				console.error('Failed to fetch movie:', error)
@@ -76,7 +84,7 @@ export default function MoviePage() {
 					<Film className='w-16 h-16 text-gray-600 mx-auto mb-4' />
 					<h1 className='text-2xl font-bold text-white'>Фильм не найден</h1>
 					<Link href='/movies' className='text-blue-400 mt-4 inline-block'>
-						Вернуться к списку
+						Вернуться к списку фильмов
 					</Link>
 				</div>
 			</main>
@@ -91,7 +99,10 @@ export default function MoviePage() {
 			<div className='container mx-auto px-4'>
 				{/* Хлебные крошки */}
 				<div className='mb-6 text-sm text-gray-500'>
-					<Link href='/movies' className='hover:text-blue-400'>
+					<Link
+						href='/movies'
+						className='hover:text-blue-400 transition-colors'
+					>
 						Фильмы
 					</Link>
 					<span className='mx-2'>/</span>
@@ -102,7 +113,7 @@ export default function MoviePage() {
 				<div className='flex flex-col lg:flex-row gap-8'>
 					{/* Постер */}
 					<div className='lg:w-1/3'>
-						<div className='relative aspect-[2/3] rounded-xl overflow-hidden bg-custom-dark'>
+						<div className='relative aspect-[2/3] rounded-xl overflow-hidden bg-custom-dark shadow-2xl'>
 							{movie.posterUrl ? (
 								<Image
 									src={getImageUrl(movie.posterUrl)}
@@ -129,34 +140,34 @@ export default function MoviePage() {
 						)}
 
 						{/* Мета-информация */}
-						<div className='flex flex-wrap gap-4 mb-6 text-gray-400'>
+						<div className='flex flex-wrap gap-4 mb-6'>
 							{movie.releaseYear && (
-								<div className='flex items-center gap-1'>
+								<div className='flex items-center gap-2 text-gray-400'>
 									<Calendar className='w-4 h-4' />
 									<span>{movie.releaseYear}</span>
 								</div>
 							)}
 							{movie.movie?.duration && (
-								<div className='flex items-center gap-1'>
+								<div className='flex items-center gap-2 text-gray-400'>
 									<Clock className='w-4 h-4' />
 									<span>{movie.movie.duration} мин</span>
 								</div>
 							)}
 							{movie.ageRating && (
-								<span className='px-2 py-0.5 bg-gray-800 rounded text-xs'>
+								<div className='px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-300'>
 									{movie.ageRating}
-								</span>
+								</div>
 							)}
 						</div>
 
-						{/* Рейтинг */}
+						{/* Звёздный рейтинг */}
 						{primaryRating && (
-							<div className='flex items-center gap-2 mb-6'>
+							<div className='flex items-center gap-2 mb-4'>
 								<div className='flex items-center gap-1'>
 									{[...Array(5)].map((_, i) => (
 										<Star
 											key={i}
-											className={`w-4 h-4 ${
+											className={`w-5 h-5 ${
 												i < Math.floor(primaryRating / 2)
 													? 'fill-yellow-500 text-yellow-500'
 													: 'text-gray-600'
@@ -167,7 +178,29 @@ export default function MoviePage() {
 								<span className='text-xl font-bold text-white'>
 									{primaryRating.toFixed(1)}
 								</span>
-								<span className='text-gray-500'>/10</span>
+								<span className='text-gray-500'>/ 10</span>
+							</div>
+						)}
+
+						{/* Рейтинги IMDb и Кинопоиск */}
+						{(movie.imdbRating || movie.kinopoiskRating) && (
+							<div className='flex flex-wrap gap-3 mb-6'>
+								{movie.imdbRating && (
+									<div className='flex items-center gap-1 bg-gray-800/50 px-2 py-1 rounded'>
+										<span className='text-xs text-gray-400'>IMDb</span>
+										<span className='text-sm font-bold text-yellow-500'>
+											{movie.imdbRating.toFixed(1)}
+										</span>
+									</div>
+								)}
+								{movie.kinopoiskRating && (
+									<div className='flex items-center gap-1 bg-gray-800/50 px-2 py-1 rounded'>
+										<span className='text-xs text-gray-400'>КП</span>
+										<span className='text-sm font-bold text-yellow-500'>
+											{movie.kinopoiskRating.toFixed(1)}
+										</span>
+									</div>
+								)}
 							</div>
 						)}
 
@@ -192,7 +225,7 @@ export default function MoviePage() {
 										<Link
 											key={g.genre.id}
 											href={`/movies?genre=${g.genre.id}`}
-											className='px-3 py-1 bg-custom-darker border border-gray-700 rounded-lg text-sm text-gray-300 hover:text-white hover:border-blue-500'
+											className='px-3 py-1 bg-custom-darker border border-gray-700 rounded-lg text-sm text-gray-300 hover:text-white hover:border-blue-500 transition-colors'
 										>
 											{g.genre.name}
 										</Link>
@@ -203,41 +236,42 @@ export default function MoviePage() {
 					</div>
 				</div>
 
-				{/* Актёры */}
+				{/* Актёры и создатели */}
 				{movie.persons && movie.persons.length > 0 && (
 					<div className='mt-12'>
-						<h2 className='text-xl font-semibold text-white mb-4'>
+						<h2 className='text-xl font-semibold text-white mb-4 flex items-center gap-2'>
+							<User className='w-5 h-5 text-blue-400' />
 							Актёры и создатели
 						</h2>
-						<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'>
+						<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4'>
 							{movie.persons.map(person => (
 								<Link
 									key={person.person.id}
 									href={`/actors/${person.person.id}`}
-									className='bg-custom-dark rounded-lg overflow-hidden border border-gray-800 hover:border-blue-500 transition p-2 text-center'
+									className='group bg-custom-dark rounded-xl overflow-hidden border border-gray-800 hover:border-blue-500 transition-all duration-300'
 								>
-									<div className='relative w-16 h-16 mx-auto rounded-full overflow-hidden bg-custom-darker'>
+									<div className='relative aspect-square overflow-hidden bg-custom-darker'>
 										{person.person.photoUrl ? (
 											<Image
 												src={getImageUrl(person.person.photoUrl)}
 												alt={person.person.fullname}
 												fill
-												className='object-cover'
+												className='object-cover group-hover:scale-105 transition-transform duration-300'
 												unoptimized={true}
 											/>
 										) : (
-											<div className='w-full h-full flex items-center justify-center bg-blue-600'>
-												<User className='w-6 h-6 text-white' />
+											<div className='w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600'>
+												<User className='w-8 h-8 text-white/50' />
 											</div>
 										)}
 									</div>
-									<div className='mt-2'>
-										<div className='text-sm font-medium text-white truncate'>
+									<div className='p-3 text-center'>
+										<h4 className='font-semibold text-white text-sm line-clamp-1'>
 											{person.person.fullname}
-										</div>
-										<div className='text-xs text-gray-500 truncate'>
-											{person.roleName || 'Актёр'}
-										</div>
+										</h4>
+										<p className='text-xs text-gray-500 mt-1'>
+											{person.roleName || person.role?.name || 'Актёр'}
+										</p>
 									</div>
 								</Link>
 							))}
