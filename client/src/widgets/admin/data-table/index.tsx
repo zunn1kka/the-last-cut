@@ -2,21 +2,7 @@
 
 import { Search } from 'lucide-react'
 import { useState } from 'react'
-
-interface Column {
-	key: string
-	label: string
-	render?: (item: any) => React.ReactNode
-}
-
-interface DataTableProps {
-	data: any[]
-	columns: Column[]
-	onDelete?: (id: string) => void
-	onEdit?: (item: any) => void
-	searchPlaceholder?: string
-	searchFields?: string[]
-}
+import { DataTableProps } from './data-table-props.interface'
 
 export function DataTable({
 	data,
@@ -25,6 +11,7 @@ export function DataTable({
 	onEdit,
 	searchPlaceholder = 'Поиск...',
 	searchFields = ['title', 'name', 'username', 'email'],
+	loading = false,
 }: DataTableProps) {
 	const [searchQuery, setSearchQuery] = useState('')
 	const [currentPage, setCurrentPage] = useState(1)
@@ -50,6 +37,40 @@ export function DataTable({
 	const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchQuery(e.target.value)
 		setCurrentPage(1)
+	}
+
+	// Функция для рендера значения ячейки в зависимости от типа
+	const renderCellValue = (item: any, column: any) => {
+		// Если есть кастомный render, используем его
+		if (column.render) {
+			return column.render(item)
+		}
+
+		const value = item[column.key]
+
+		// Обработка разных типов
+		switch (column.type) {
+			case 'image':
+				if (!value) return <span className='text-gray-500'>—</span>
+				return (
+					<img
+						src={value}
+						alt={item.title || 'image'}
+						className='w-12 h-16 object-cover rounded'
+						onError={e => {
+							;(e.target as HTMLImageElement).src = '/placeholder-image.jpg'
+						}}
+					/>
+				)
+			case 'actions':
+				return null // Действия обрабатываются отдельно
+			default:
+				return value?.toString() || '—'
+		}
+	}
+
+	if (loading) {
+		return <div className='text-center py-12 text-gray-500'>Загрузка...</div>
 	}
 
 	if (data.length === 0) {
@@ -104,7 +125,9 @@ export function DataTable({
 							>
 								{columns.map(column => (
 									<td key={column.key} className='py-3 px-4 text-white'>
-										{column.render ? column.render(item) : item[column.key]}
+										{column.type === 'actions'
+											? null
+											: renderCellValue(item, column)}
 									</td>
 								))}
 								{(onEdit || onDelete) && (
