@@ -1,6 +1,6 @@
 'use client'
 
-import { contentApi } from '@/shared/api/content/content-api'
+import { apiClient } from '@/shared/api/axios-instance'
 import { getImageUrl } from '@/shared/lib/get-image-url'
 import { Comments } from '@/widgets/comments'
 import { Calendar, Clock, Film, Star, User } from 'lucide-react'
@@ -55,7 +55,7 @@ export default function MoviePage() {
 		const fetchData = async () => {
 			setLoading(true)
 			try {
-				const response = await contentApi.getById(id as string)
+				const response = await apiClient.get(`/content/movies/${id}`)
 				console.log('📥 Movie data:', response.data)
 				console.log('📥 Duration:', response.data.movie?.duration)
 				console.log('📥 Genres count:', response.data.genres?.length)
