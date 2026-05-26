@@ -117,7 +117,6 @@ function AdminMoviesPage() {
 					alert(`Ошибка: ${errorMessage}`)
 				} else if (error.request) {
 					// Запрос был отправлен, но нет ответа
-					console.error('Нет ответа от сервера:', error.request)
 					alert('Сервер не отвечает. Проверьте подключение.')
 				} else {
 					// Ошибка при настройке запроса
