@@ -167,8 +167,6 @@ export default function AdminCommentsPage() {
 				</div>
 			),
 		},
-
-		{ key: 'actions', label: 'Действия', type: 'actions' },
 	]
 
 	return (

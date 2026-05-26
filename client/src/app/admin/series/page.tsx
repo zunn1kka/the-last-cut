@@ -6,6 +6,7 @@ import Button from '@/shared/ui/Button'
 import { DataTable } from '@/widgets/admin/data-table'
 import { Plus, Tv } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 interface Series {
@@ -20,6 +21,7 @@ interface Series {
 }
 
 export default function AdminSeriesPage() {
+	const router = useRouter()
 	const [series, setSeries] = useState<Series[]>([])
 	const [loading, setLoading] = useState(true)
 
@@ -44,6 +46,10 @@ export default function AdminSeriesPage() {
 		} finally {
 			setLoading(false)
 		}
+	}
+
+	const handleEdit = (series: Series) => {
+		router.push(`/admin/movies/${series.id}`)
 	}
 
 	const handleDelete = async (id: string) => {
@@ -74,7 +80,6 @@ export default function AdminSeriesPage() {
 				</Link>
 			),
 		},
-		{ key: 'actions', label: 'Действия', type: 'actions' },
 	]
 
 	return (
@@ -97,7 +102,7 @@ export default function AdminSeriesPage() {
 					data={series}
 					columns={columns}
 					loading={loading}
-					onEdit={id => `/admin/series/${id}`}
+					onEdit={handleEdit}
 					onDelete={handleDelete}
 				/>
 			</div>

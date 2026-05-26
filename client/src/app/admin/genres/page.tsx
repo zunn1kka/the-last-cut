@@ -6,6 +6,7 @@ import Button from '@/shared/ui/Button'
 import { DataTable } from '@/widgets/admin/data-table'
 import { BookMarked, Plus } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 interface Genre {
@@ -15,6 +16,7 @@ interface Genre {
 }
 
 export default function AdminGenresPage() {
+	const router = useRouter()
 	const [genres, setGenres] = useState<Genre[]>([])
 	const [loading, setLoading] = useState(true)
 
@@ -33,6 +35,10 @@ export default function AdminGenresPage() {
 		}
 	}
 
+	const handleEdit = (genre: Genre) => {
+		router.push(`/admin/movies/${genre.id}`)
+	}
+
 	const handleDelete = async (id: string) => {
 		if (confirm('Вы уверены, что хотите удалить этот жанр?')) {
 			try {
@@ -47,7 +53,6 @@ export default function AdminGenresPage() {
 	const columns = [
 		{ key: 'name', label: 'Название' },
 		{ key: 'slug', label: 'Slug' },
-		{ key: 'actions', label: 'Действия', type: 'actions' },
 	]
 
 	return (
@@ -70,7 +75,7 @@ export default function AdminGenresPage() {
 					data={genres}
 					columns={columns}
 					loading={loading}
-					onEdit={id => `/admin/genres/${id}`}
+					onEdit={handleEdit}
 					onDelete={handleDelete}
 				/>
 			</div>

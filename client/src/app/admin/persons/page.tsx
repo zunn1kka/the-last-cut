@@ -6,6 +6,7 @@ import Button from '@/shared/ui/Button'
 import { DataTable } from '@/widgets/admin/data-table'
 import { Plus, Users } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 interface Person {
@@ -16,6 +17,7 @@ interface Person {
 }
 
 export default function AdminPersonsPage() {
+	const router = useRouter()
 	const [persons, setPersons] = useState<Person[]>([])
 	const [loading, setLoading] = useState(true)
 
@@ -34,6 +36,10 @@ export default function AdminPersonsPage() {
 		} finally {
 			setLoading(false)
 		}
+	}
+
+	const handleEdit = (person: Person) => {
+		router.push(`/admin/persons/${person.id}`)
 	}
 
 	const handleDelete = async (id: string) => {
@@ -84,7 +90,7 @@ export default function AdminPersonsPage() {
 					data={persons}
 					columns={columns}
 					loading={loading}
-					onEdit={id => `/admin/persons/${id}`}
+					onEdit={handleEdit}
 					onDelete={handleDelete}
 				/>
 			</div>
