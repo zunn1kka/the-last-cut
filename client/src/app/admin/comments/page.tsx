@@ -44,9 +44,7 @@ export default function AdminCommentsPage() {
 	const fetchComments = async () => {
 		try {
 			const response = await adminApi.getComments({ status })
-			console.log('📥 Comments response:', response.data) // ← СМОТРИ СЮДА!
 
-			// 🔥 ВАЖНО: извлекаем массив из response.data
 			let commentsData = []
 			let total = 0
 			let page = 1
