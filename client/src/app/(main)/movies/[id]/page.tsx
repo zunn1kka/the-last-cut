@@ -2,6 +2,7 @@
 
 import { contentApi } from '@/shared/api/content/content-api'
 import { getImageUrl } from '@/shared/lib/get-image-url'
+import { Comments } from '@/widgets/comments'
 import { Calendar, Clock, DollarSign, Film, Star, User } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -55,6 +56,7 @@ export default function MoviePage() {
 			setLoading(true)
 			try {
 				const response = await contentApi.getById(id as string)
+				console.log('📥 Полученные данные:', response.data)
 				setMovie(response.data)
 			} catch (error) {
 				console.error('Failed to fetch movie data:', error)
@@ -87,15 +89,8 @@ export default function MoviePage() {
 		return `$${budget}`
 	}
 
-	const getAgeRatingColor = (rating: string | null) => {
-		if (!rating) return 'bg-gray-500/20 text-gray-400'
-		if (rating === '18+' || rating === 'R' || rating === 'NC-17') {
-			return 'bg-red-500/20 text-red-400'
-		}
-		if (rating === '16+') {
-			return 'bg-orange-500/20 text-orange-400'
-		}
-		return 'bg-green-500/20 text-green-400'
+	const getPrimaryRating = () => {
+		return movie?.siteRating || movie?.imdbRating || movie?.kinopoiskRating
 	}
 
 	if (loading) {
@@ -118,13 +113,7 @@ export default function MoviePage() {
 					<h1 className='text-2xl font-bold text-white mb-2'>
 						Фильм не найден
 					</h1>
-					<p className='text-gray-500'>
-						Возможно, он был удалён или вы перешли по неверной ссылке
-					</p>
-					<Link
-						href='/movies'
-						className='inline-block mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors'
-					>
+					<Link href='/movies' className='text-blue-400 hover:text-blue-300'>
 						Вернуться к списку фильмов
 					</Link>
 				</div>
@@ -132,8 +121,7 @@ export default function MoviePage() {
 		)
 	}
 
-	const primaryRating =
-		movie.siteRating || movie.imdbRating || movie.kinopoiskRating
+	const primaryRating = getPrimaryRating()
 	const averageRating = primaryRating?.toFixed(1)
 
 	return (
@@ -200,9 +188,7 @@ export default function MoviePage() {
 								</div>
 							)}
 							{movie.ageRating && (
-								<div
-									className={`px-2 py-1 rounded text-xs font-medium ${getAgeRatingColor(movie.ageRating)}`}
-								>
+								<div className='px-2 py-1 rounded text-xs font-medium bg-gray-800 text-gray-300'>
 									{movie.ageRating}
 								</div>
 							)}
@@ -271,7 +257,7 @@ export default function MoviePage() {
 
 						{/* Бюджет */}
 						{movie.movie?.budget && (
-							<div className='flex items-center gap-2 text-gray-400'>
+							<div className='flex items-center gap-2 text-gray-400 mb-4'>
 								<DollarSign className='w-5 h-5' />
 								<span>Бюджет: {formatBudget(movie.movie.budget)}</span>
 							</div>
@@ -299,7 +285,7 @@ export default function MoviePage() {
 												src={getImageUrl(person.person.photoUrl)}
 												alt={person.person.fullname}
 												fill
-												className='object-cover group-hover:scale-105 transition-transform duration-300'
+												className='object-cover group-hover:scale-105 transition-transform'
 												unoptimized={true}
 											/>
 										) : (
@@ -321,6 +307,9 @@ export default function MoviePage() {
 						</div>
 					</div>
 				)}
+
+				{/* Комментарии */}
+				<Comments contentId={movie.id} contentType='MOVIE' />
 			</div>
 		</main>
 	)
