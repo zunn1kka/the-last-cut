@@ -1,38 +1,20 @@
-import { Comments } from '@/widgets/comments'
-import { ContentDetails } from '@/widgets/content-details'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { MovieClient } from './movie-client'
 
 interface PageProps {
 	params: Promise<{ id: string }>
 }
 
 async function getMovie(id: string) {
-	const apiUrl = process.env.NEXT_PUBLIC_API_URL
-	if (!apiUrl) {
-		console.error('NEXT_PUBLIC_API_URL is not set')
-		return null
-	}
-
+	const baseURL = process.env.NEXT_PUBLIC_API_URL
 	try {
-		// Используем fetch вместо apiClient
-		const response = await fetch(`${apiUrl}/content/movies/${id}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			// Важно: не кешируем данные для динамических страниц
+		const response = await fetch(`${baseURL}/content/movies/${id}`, {
 			cache: 'no-store',
 		})
-
-		if (!response.ok) {
-			console.error(`API returned ${response.status} for movie ${id}`)
-			return null
-		}
-
+		if (!response.ok) return null
 		return response.json()
 	} catch (error) {
-		console.error('Failed to fetch movie:', error)
 		return null
 	}
 }
@@ -53,9 +35,6 @@ export async function generateMetadata({
 	}
 }
 
-// Важно: отключаем статическую генерацию для этой страницы
-export const dynamic = 'force-dynamic'
-
 export default async function MoviePage({ params }: PageProps) {
 	const { id } = await params
 	const movie = await getMovie(id)
@@ -64,12 +43,5 @@ export default async function MoviePage({ params }: PageProps) {
 		notFound()
 	}
 
-	return (
-		<main className='bg-custom-darker min-h-screen py-12'>
-			<div className='container mx-auto px-4'>
-				<ContentDetails content={movie} contentType='MOVIE' />
-				<Comments contentId={movie.id} contentType='MOVIE' />
-			</div>
-		</main>
-	)
+	return <MovieClient movie={movie} />
 }
