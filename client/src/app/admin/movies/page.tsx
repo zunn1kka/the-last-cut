@@ -5,6 +5,7 @@ import Button from '@/shared/ui/Button'
 import { DataTable } from '@/widgets/admin/data-table'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 interface Movie {
@@ -16,6 +17,7 @@ interface Movie {
 }
 
 function AdminMoviesPage() {
+	const router = useRouter()
 	const [movies, setMovies] = useState<Movie[]>([])
 	const [loading, setLoading] = useState(true)
 
@@ -59,8 +61,12 @@ function AdminMoviesPage() {
 		{ key: 'title', label: 'Название' },
 		{ key: 'releaseYear', label: 'Год' },
 		{ key: 'duration', label: 'Длительность' },
-		{ key: 'actions', label: 'Действия', type: 'actions' },
 	]
+
+	const handleEdit = (movie: Movie) => {
+		// Переход на страницу редактирования
+		router.push(`/admin/movies/${movie.id}`)
+	}
 
 	const handleDelete = async (id: string) => {
 		console.log('🗑️ Начинаем удаление фильма с ID:', id)
@@ -153,7 +159,7 @@ function AdminMoviesPage() {
 					data={movies}
 					columns={columns}
 					loading={loading}
-					onEdit={id => `/admin/movies/${id}`}
+					onEdit={handleEdit}
 					onDelete={handleDelete}
 				/>
 			</div>
