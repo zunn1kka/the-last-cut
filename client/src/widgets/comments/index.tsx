@@ -3,7 +3,6 @@
 import { useAuth } from '@/features/auth/model/auth-context'
 import { commentsApi } from '@/shared/api/comments/comments-api'
 import { ratingsApi } from '@/shared/api/ratings/ratings-api'
-import { formatRelativeTime } from '@/shared/lib/format-date'
 import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { Flag, Star, ThumbsDown, ThumbsUp } from 'lucide-react'
@@ -175,7 +174,7 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 			>
 				<div className='flex items-start justify-between mb-2'>
 					<div className='flex items-center gap-3'>
-						<div className='relative w-10 h-10 rounded-full overflow-hidden bg-custom-darker'>
+						<div className='relative w-10 h-10 rounded-full overflow-hidden bg-custom-darker flex-shrink-0'>
 							{comment.user?.avatarUrl ? (
 								<Image
 									src={getImageUrl(comment.user.avatarUrl)}
@@ -197,13 +196,10 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 							>
 								{comment.user?.username}
 							</Link>
-							<p className='text-xs text-gray-500'>
-								{formatRelativeTime(comment.createdAt)}
-							</p>
 						</div>
 					</div>
 					{comment.rating && (
-						<div className='flex items-center gap-1 bg-yellow-500/20 px-2 py-1 rounded'>
+						<div className='flex items-center gap-1 bg-yellow-500/20 px-2 py-1 rounded flex-shrink-0 ml-2'>
 							<Star className='w-4 h-4 text-yellow-500 fill-yellow-500' />
 							<span className='text-yellow-500 font-semibold'>
 								{comment.rating}
@@ -212,9 +208,14 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 					)}
 				</div>
 
-				<p className='text-gray-300 mb-3 ml-13'>{comment.text}</p>
+				{/* Исправленный блок с текстом комментария */}
+				<div className='mb-3 ml-13'>
+					<p className='text-gray-300 break-words whitespace-pre-wrap overflow-hidden'>
+						{comment.text}
+					</p>
+				</div>
 
-				<div className='flex items-center gap-4 ml-13'>
+				<div className='flex items-center gap-4 ml-13 flex-wrap'>
 					<button
 						onClick={() => handleCommentRating(comment.id, true)}
 						className={`flex items-center gap-1 transition-colors ${
@@ -269,14 +270,14 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 
 				{isReplying && (
 					<div className='mt-4 ml-13'>
-						<input
-							type='text'
+						<textarea
 							data-reply-to={comment.id}
 							value={replyText}
 							onChange={e => handleReplyTextChange(comment.id, e.target.value)}
 							placeholder={`Ответить ${comment.user?.username}...`}
 							dir='ltr'
-							className='w-full px-4 py-3 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+							rows={3}
+							className='w-full px-4 py-3 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y'
 							autoFocus
 						/>
 						<div className='flex gap-2 mt-2'>
@@ -330,7 +331,7 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 						placeholder='Напишите свой комментарий...'
 						rows={4}
 						dir='ltr'
-						className='w-full px-4 py-3 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+						className='w-full px-4 py-3 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y'
 					/>
 
 					<div className='flex justify-end mt-4'>
@@ -352,8 +353,8 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 
 			{/* Модальное окно для жалобы */}
 			{reportCommentId && (
-				<div className='fixed inset-0 bg-black/80 flex items-center justify-center z-50'>
-					<div className='bg-custom-dark rounded-xl border border-gray-800 p-6 max-w-md w-full mx-4'>
+				<div className='fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4'>
+					<div className='bg-custom-dark rounded-xl border border-gray-800 p-6 max-w-md w-full'>
 						<h3 className='text-xl font-bold text-white mb-4'>
 							Пожаловаться на комментарий
 						</h3>
@@ -362,7 +363,7 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 							onChange={e => setReportReason(e.target.value)}
 							placeholder='Укажите причину жалобы...'
 							rows={4}
-							className='w-full px-4 py-3 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4'
+							className='w-full px-4 py-3 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y mb-4'
 						/>
 						<div className='flex gap-2 justify-end'>
 							<Button
