@@ -100,7 +100,6 @@ export default function MoviePage() {
 	return (
 		<main className='bg-custom-darker min-h-screen py-12'>
 			<div className='container mx-auto px-4'>
-				{/* Хлебные крошки */}
 				<div className='mb-6 text-sm text-gray-500'>
 					<Link href='/movies' className='hover:text-blue-400'>
 						Фильмы
