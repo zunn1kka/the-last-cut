@@ -340,16 +340,6 @@ export default function SeriesPage() {
 																</span>
 															</>
 														)}
-														{episode.airDate && (
-															<>
-																<span className='text-gray-600'>•</span>
-																<span className='text-sm text-gray-500'>
-																	{new Date(episode.airDate).toLocaleDateString(
-																		'ru-RU',
-																	)}
-																</span>
-															</>
-														)}
 													</div>
 													<h4 className='text-white font-medium'>
 														{episode.title}
