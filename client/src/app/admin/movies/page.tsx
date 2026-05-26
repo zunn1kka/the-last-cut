@@ -64,7 +64,6 @@ function AdminMoviesPage() {
 	]
 
 	const handleEdit = (movie: Movie) => {
-		// Переход на страницу редактирования
 		router.push(`/admin/movies/${movie.id}`)
 	}
 
