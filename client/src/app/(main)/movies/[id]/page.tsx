@@ -57,6 +57,9 @@ export default function MoviePage() {
 			try {
 				const response = await contentApi.getById(id as string)
 				console.log('📥 Movie data:', response.data)
+				console.log('📥 Duration:', response.data.movie?.duration)
+				console.log('📥 Genres count:', response.data.genres?.length)
+				console.log('📥 Persons count:', response.data.persons?.length)
 				setMovie(response.data)
 			} catch (error) {
 				console.error('Failed to fetch movie:', error)
@@ -99,10 +102,7 @@ export default function MoviePage() {
 			<div className='container mx-auto px-4'>
 				{/* Хлебные крошки */}
 				<div className='mb-6 text-sm text-gray-500'>
-					<Link
-						href='/movies'
-						className='hover:text-blue-400 transition-colors'
-					>
+					<Link href='/movies' className='hover:text-blue-400'>
 						Фильмы
 					</Link>
 					<span className='mx-2'>/</span>
@@ -256,7 +256,7 @@ export default function MoviePage() {
 												src={getImageUrl(person.person.photoUrl)}
 												alt={person.person.fullname}
 												fill
-												className='object-cover group-hover:scale-105 transition-transform duration-300'
+												className='object-cover group-hover:scale-105 transition-transform'
 												unoptimized={true}
 											/>
 										) : (
