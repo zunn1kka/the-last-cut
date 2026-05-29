@@ -15,7 +15,41 @@ export function DataTable({
 }: DataTableProps) {
 	const [searchQuery, setSearchQuery] = useState('')
 	const [currentPage, setCurrentPage] = useState(1)
+	const [sortColumn, setSortColumn] = useState<string | null>(null)
+	const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 	const itemsPerPage = 10
+
+	// Сортировка данных
+	const sortData = (data: any[]) => {
+		if (!sortColumn) return data
+
+		return [...data].sort((a, b) => {
+			let aValue = a[sortColumn]
+			let bValue = b[sortColumn]
+
+			// Если значение undefined или null, заменяем на пустую строку
+			if (aValue === undefined || aValue === null) aValue = ''
+			if (bValue === undefined || bValue === null) bValue = ''
+
+			// Сравнение в зависимости от типа
+			let comparison = 0
+
+			// Если это числа
+			if (typeof aValue === 'number' && typeof bValue === 'number') {
+				comparison = aValue - bValue
+			}
+			// Если это даты
+			else if (aValue instanceof Date || bValue instanceof Date) {
+				comparison = new Date(aValue).getTime() - new Date(bValue).getTime()
+			}
+			// Если это строки
+			else {
+				comparison = String(aValue).localeCompare(String(bValue))
+			}
+
+			return sortDirection === 'asc' ? comparison : -comparison
+		})
+	}
 
 	// Фильтрация данных
 	const filteredData = data.filter(item => {
@@ -27,9 +61,12 @@ export function DataTable({
 		})
 	})
 
+	// Сортировка отфильтрованных данных
+	const sortedData = sortData(filteredData)
+
 	// Пагинация
-	const totalPages = Math.ceil(filteredData.length / itemsPerPage)
-	const paginatedData = filteredData.slice(
+	const totalPages = Math.ceil(sortedData.length / itemsPerPage)
+	const paginatedData = sortedData.slice(
 		(currentPage - 1) * itemsPerPage,
 		currentPage * itemsPerPage,
 	)
@@ -37,6 +74,17 @@ export function DataTable({
 	const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchQuery(e.target.value)
 		setCurrentPage(1)
+	}
+
+	const handleSort = (columnKey: string) => {
+		if (sortColumn === columnKey) {
+			// Если уже сортируем по этой колонке, меняем направление
+			setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+		} else {
+			// Новая колонка - сортируем по возрастанию
+			setSortColumn(columnKey)
+			setSortDirection('asc')
+		}
 	}
 
 	// Функция для рендера значения ячейки в зависимости от типа
@@ -67,6 +115,18 @@ export function DataTable({
 			default:
 				return value?.toString() || '—'
 		}
+	}
+
+	// Получить иконку сортировки
+	const getSortIcon = (columnKey: string) => {
+		if (sortColumn !== columnKey) {
+			return <span className='ml-1 text-gray-500'>↕️</span>
+		}
+		return sortDirection === 'asc' ? (
+			<span className='ml-1 text-blue-400'>↑</span>
+		) : (
+			<span className='ml-1 text-blue-400'>↓</span>
+		)
 	}
 
 	if (loading) {
@@ -105,9 +165,19 @@ export function DataTable({
 							{columns.map(column => (
 								<th
 									key={column.key}
-									className='text-left py-3 px-4 text-gray-400 font-medium'
+									onClick={() =>
+										column.type !== 'actions' && handleSort(column.key)
+									}
+									className={`text-left py-3 px-4 text-gray-400 font-medium ${
+										column.type !== 'actions'
+											? 'cursor-pointer hover:text-white transition-colors'
+											: ''
+									}`}
 								>
-									{column.label}
+									<div className='flex items-center'>
+										{column.label}
+										{column.type !== 'actions' && getSortIcon(column.key)}
+									</div>
 								</th>
 							))}
 							{(onEdit || onDelete) && (
@@ -183,7 +253,7 @@ export function DataTable({
 
 			{/* Информация о количестве */}
 			<div className='text-center text-sm text-gray-500 mt-4'>
-				Найдено: {filteredData.length} из {data.length}
+				Найдено: {sortedData.length} из {data.length}
 			</div>
 		</div>
 	)
