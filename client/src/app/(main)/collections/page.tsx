@@ -11,7 +11,6 @@ import {
 	Globe,
 	Lock,
 	MoreVertical,
-	Pencil,
 	Search,
 	Trash2,
 } from 'lucide-react'
@@ -280,15 +279,6 @@ export default function CollectionsPage() {
 												<MoreVertical className='w-5 h-5' />
 											</button>
 											<div className='absolute right-0 mt-1 w-36 bg-custom-dark border border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10'>
-												<button
-													onClick={() =>
-														router.push(`/collections/${collection.id}/edit`)
-													}
-													className='w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-custom-darker hover:text-white flex items-center gap-2 rounded-t-lg'
-												>
-													<Pencil className='w-4 h-4' />
-													Редактировать
-												</button>
 												<button
 													onClick={() => handleDelete(collection.id)}
 													className='w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-red-950/50 flex items-center gap-2 rounded-b-lg'

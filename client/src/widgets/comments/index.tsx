@@ -335,7 +335,11 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 					/>
 
 					<div className='flex justify-end mt-4'>
-						<Button type='submit' disabled={submitting || !newComment.trim()}>
+						<Button
+							type='submit'
+							disabled={submitting || !newComment.trim()}
+							className='text-white'
+						>
 							{submitting ? 'Отправка...' : 'Отправить'}
 						</Button>
 					</div>
