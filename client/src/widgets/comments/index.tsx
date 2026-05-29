@@ -390,7 +390,7 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 				</div>
 			) : comments.length === 0 ? (
 				<div className='text-center py-12 text-gray-500'>
-					Пока нет комментариев. Будьте первым!
+					Пока нет комментариев. Будьте первым
 				</div>
 			) : (
 				<div className='space-y-6'>
