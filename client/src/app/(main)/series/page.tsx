@@ -140,7 +140,7 @@ export default function SeriesPage() {
 						</Button>
 					</div>
 
-					{/* Панель фильтров (аналогична фильмам) */}
+					{/* Панель фильтров */}
 					{showFilters && (
 						<div className='mt-6 pt-6 border-t border-gray-800'>
 							<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
@@ -181,10 +181,17 @@ export default function SeriesPage() {
 												})
 											}
 											className='flex-1 px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+											style={{ colorScheme: 'dark' }}
 										>
-											<option value=''>От</option>
+											<option value='' className='bg-custom-darker text-white'>
+												От
+											</option>
 											{years.map(year => (
-												<option key={year} value={year}>
+												<option
+													key={year}
+													value={year}
+													className='bg-custom-darker text-white'
+												>
 													{year}
 												</option>
 											))}
@@ -200,12 +207,17 @@ export default function SeriesPage() {
 												})
 											}
 											className='flex-1 px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+											style={{ colorScheme: 'dark' }}
 										>
 											<option value='' className='bg-custom-darker text-white'>
 												До
 											</option>
 											{years.map(year => (
-												<option key={year} value={year}>
+												<option
+													key={year}
+													value={year}
+													className='bg-custom-darker text-white'
+												>
 													{year}
 												</option>
 											))}
@@ -229,12 +241,17 @@ export default function SeriesPage() {
 												})
 											}
 											className='flex-1 px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+											style={{ colorScheme: 'dark' }}
 										>
 											<option value='' className='bg-custom-darker text-white'>
 												От
 											</option>
 											{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(r => (
-												<option key={r} value={r}>
+												<option
+													key={r}
+													value={r}
+													className='bg-custom-darker text-white'
+												>
 													{r}
 												</option>
 											))}
@@ -250,12 +267,17 @@ export default function SeriesPage() {
 												})
 											}
 											className='flex-1 px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+											style={{ colorScheme: 'dark' }}
 										>
 											<option value='' className='bg-custom-darker text-white'>
 												До
 											</option>
 											{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(r => (
-												<option key={r} value={r}>
+												<option
+													key={r}
+													value={r}
+													className='bg-custom-darker text-white'
+												>
 													{r}
 												</option>
 											))}
@@ -263,7 +285,6 @@ export default function SeriesPage() {
 									</div>
 								</div>
 
-								{/* Сортировка */}
 								<div>
 									<label className='block text-sm font-medium text-gray-300 mb-2'>
 										Сортировка
@@ -275,6 +296,7 @@ export default function SeriesPage() {
 												setFilters({ ...filters, sortBy: e.target.value })
 											}
 											className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm'
+											style={{ colorScheme: 'dark' }}
 										>
 											<option
 												value='releaseYear'
@@ -310,6 +332,7 @@ export default function SeriesPage() {
 												})
 											}
 											className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm'
+											style={{ colorScheme: 'dark' }}
 										>
 											<option
 												value='desc'
