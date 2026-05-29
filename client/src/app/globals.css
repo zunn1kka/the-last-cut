@@ -175,3 +175,55 @@ body {
 		animation: fadeInUp 0.5s ease-out forwards;
 	}
 }
+
+select,
+select option {
+	background-color: #1a1a1a !important; /* bg-custom-darker */
+	color: #ffffff !important; /* text-white */
+}
+
+select::-webkit-listbox,
+select::-webkit-listbox option {
+	background-color: #1a1a1a !important;
+	color: #ffffff !important;
+}
+
+select:-moz-focusring {
+	color: transparent !important;
+	text-shadow: 0 0 0 #ffffff !important;
+}
+
+select option {
+	background-color: #1a1a1a !important;
+	color: #ffffff !important;
+	padding: 8px !important;
+}
+
+select:focus {
+	outline: none !important;
+	ring: 2px solid #3b82f6 !important;
+}
+
+select {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background-color: #1a1a1a !important;
+	color: #ffffff !important;
+}
+
+select:disabled,
+select option:disabled {
+	background-color: #2a2a2a !important;
+	color: #6b7280 !important;
+}
+
+select[multiple] option {
+	background-color: #1a1a1a !important;
+	color: #ffffff !important;
+}
+
+select[multiple] option:checked {
+	background-color: #2563eb !important; /* bg-blue-600 */
+	color: #ffffff !important;
+}
