@@ -155,6 +155,7 @@ export function PersonForm({
 									src={photoPreview}
 									alt='Photo preview'
 									fill
+									unoptimized={true}
 									className='object-cover'
 								/>
 								<button

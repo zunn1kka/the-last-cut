@@ -577,9 +577,24 @@ export default function ProfilePage() {
 												onChange={e => setFavoriteSortBy(e.target.value as any)}
 												className='px-3 py-1 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm'
 											>
-												<option value='date'>Дате добавления</option>
-												<option value='title'>Названию</option>
-												<option value='rating'>Рейтингу</option>
+												<option
+													value='date'
+													className='bg-custom-darker text-white'
+												>
+													Дате добавления
+												</option>
+												<option
+													value='title'
+													className='bg-custom-darker text-white'
+												>
+													Названию
+												</option>
+												<option
+													value='rating'
+													className='bg-custom-darker text-white'
+												>
+													Рейтингу
+												</option>
 											</select>
 											<button
 												onClick={() =>

@@ -49,7 +49,7 @@ export default function AdminSeriesPage() {
 	}
 
 	const handleEdit = (series: Series) => {
-		router.push(`/admin/movies/${series.id}`)
+		router.push(`/admin/series/${series.id}`)
 	}
 
 	const handleDelete = async (id: string) => {

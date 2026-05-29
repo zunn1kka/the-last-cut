@@ -36,7 +36,7 @@ export default function AdminGenresPage() {
 	}
 
 	const handleEdit = (genre: Genre) => {
-		router.push(`/admin/movies/${genre.id}`)
+		router.push(`/admin/genres/${genre.id}`)
 	}
 
 	const handleDelete = async (id: string) => {

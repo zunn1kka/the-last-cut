@@ -201,7 +201,9 @@ export default function SeriesPage() {
 											}
 											className='flex-1 px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
 										>
-											<option value=''>До</option>
+											<option value='' className='bg-custom-darker text-white'>
+												До
+											</option>
 											{years.map(year => (
 												<option key={year} value={year}>
 													{year}
@@ -228,7 +230,9 @@ export default function SeriesPage() {
 											}
 											className='flex-1 px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
 										>
-											<option value=''>От</option>
+											<option value='' className='bg-custom-darker text-white'>
+												От
+											</option>
 											{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(r => (
 												<option key={r} value={r}>
 													{r}
@@ -247,7 +251,9 @@ export default function SeriesPage() {
 											}
 											className='flex-1 px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
 										>
-											<option value=''>До</option>
+											<option value='' className='bg-custom-darker text-white'>
+												До
+											</option>
 											{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(r => (
 												<option key={r} value={r}>
 													{r}
@@ -270,10 +276,30 @@ export default function SeriesPage() {
 											}
 											className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm'
 										>
-											<option value='releaseYear'>По году</option>
-											<option value='title'>По названию</option>
-											<option value='siteRating'>По рейтингу</option>
-											<option value='createdAt'>По дате добавления</option>
+											<option
+												value='releaseYear'
+												className='bg-custom-darker text-white'
+											>
+												По году
+											</option>
+											<option
+												value='title'
+												className='bg-custom-darker text-white'
+											>
+												По названию
+											</option>
+											<option
+												value='siteRating'
+												className='bg-custom-darker text-white'
+											>
+												По рейтингу
+											</option>
+											<option
+												value='createdAt'
+												className='bg-custom-darker text-white'
+											>
+												По дате добавления
+											</option>
 										</select>
 										<select
 											value={filters.sortOrder}
@@ -285,8 +311,18 @@ export default function SeriesPage() {
 											}
 											className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm'
 										>
-											<option value='desc'>По убыванию</option>
-											<option value='asc'>По возрастанию</option>
+											<option
+												value='desc'
+												className='bg-custom-darker text-white'
+											>
+												По убыванию
+											</option>
+											<option
+												value='asc'
+												className='bg-custom-darker text-white'
+											>
+												По возрастанию
+											</option>
 										</select>
 									</div>
 								</div>

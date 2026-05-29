@@ -176,9 +176,15 @@ export default function CollectionsPage() {
 							}
 							className='px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 						>
-							<option value='all'>Все сборники</option>
-							<option value='public'>Только публичные</option>
-							<option value='private'>Только приватные</option>
+							<option value='all' className='bg-custom-darker text-white'>
+								Все сборники
+							</option>
+							<option value='public' className='bg-custom-darker text-white'>
+								Только публичные
+							</option>
+							<option value='private' className='bg-custom-darker text-white'>
+								Только приватные
+							</option>
 						</select>
 
 						{/* Сортировка */}
@@ -189,9 +195,18 @@ export default function CollectionsPage() {
 							}
 							className='px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 						>
-							<option value='date'>По дате создания</option>
-							<option value='title'>По названию</option>
-							<option value='itemsCount'>По количеству фильмов</option>
+							<option value='date' className='bg-custom-darker text-white'>
+								По дате создания
+							</option>
+							<option value='title' className='bg-custom-darker text-white'>
+								По названию
+							</option>
+							<option
+								value='itemsCount'
+								className='bg-custom-darker text-white'
+							>
+								По количеству фильмов
+							</option>
 						</select>
 
 						{/* Порядок сортировки */}
