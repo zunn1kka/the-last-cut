@@ -412,7 +412,7 @@ export default function ProfilePage() {
 													setFormData({ ...formData, bio: e.target.value })
 												}
 												rows={3}
-												className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+												className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-25'
 											/>
 										</div>
 

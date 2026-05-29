@@ -331,7 +331,7 @@ export function Comments({ contentId, contentType }: CommentsProps) {
 						placeholder='Напишите свой комментарий...'
 						rows={4}
 						dir='ltr'
-						className='w-full px-4 py-3 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y'
+						className='w-full px-4 py-3 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-25'
 					/>
 
 					<div className='flex justify-end mt-4'>
