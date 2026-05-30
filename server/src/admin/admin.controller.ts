@@ -18,11 +18,9 @@ import {
 } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
-  ApiBody,
   ApiConsumes,
   ApiOperation,
   ApiParam,
-  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { AdminOrModerator } from 'src/auth/decorators/admin-or-moderator.decorator';
@@ -45,19 +43,45 @@ import { AdminService } from './admin.service';
 @ApiTags('admin')
 @ApiBearerAuth('JWT-auth')
 @Controller('admin')
-@AdminOnly()
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
+
+  // ========== УПРАВЛЕНИЕ КОММЕНТАРИЯМИ ==========
+
+  @Get('comments')
+  @AdminOrModerator()
+  @ApiOperation({ summary: 'Получить все комментарии (админ/модератор)' })
+  async getComments(
+    @Query('status') status?: string,
+    @Query('page') page?: number,
+  ) {
+    return await this.adminService.getComments(status, page);
+  }
+
+  @Get('comments/:id')
+  @AdminOrModerator()
+  @ApiOperation({ summary: 'Получить комментарий по ID (админ/модератор)' })
+  @ApiParam({ name: 'id', description: 'UUID комментария' })
+  async getCommentById(@Param('id') id: string) {
+    return await this.adminService.getCommentById(id);
+  }
+
+  @Delete('comments/:id')
+  @AdminOnly()
+  @ApiOperation({ summary: 'Удалить комментарий (только админ)' })
+  @ApiParam({ name: 'id', description: 'UUID комментария' })
+  async deleteComment(
+    @Param('id') id: string,
+    @Authorized('id') adminId: string,
+  ) {
+    return await this.adminService.deleteComment(id, adminId);
+  }
 
   // ========== УПРАВЛЕНИЕ ФИЛЬМАМИ ==========
 
   @Post('movies')
+  @AdminOnly()
   @ApiOperation({ summary: 'Создать новый фильм (только админ)' })
-  @ApiResponse({ status: 201, description: 'Фильм успешно создан' })
-  @ApiResponse({
-    status: 409,
-    description: 'Фильм с таким названием уже существует',
-  })
   async createMovie(
     @Body() dto: CreateMovieDto,
     @Authorized('id') userId: string,
@@ -66,14 +90,8 @@ export class AdminController {
   }
 
   @Put('movies/:contentId')
+  @AdminOnly()
   @ApiOperation({ summary: 'Обновить информацию о фильме (только админ)' })
-  @ApiParam({ name: 'contentId', description: 'UUID фильма' })
-  @ApiResponse({ status: 200, description: 'Фильм успешно обновлен' })
-  @ApiResponse({ status: 404, description: 'Фильм не найден' })
-  @ApiResponse({
-    status: 409,
-    description: 'Фильм с таким названием уже существует',
-  })
   async updateMovie(
     @Param('contentId') contentId: string,
     @Body() dto: UpdateMovieDto,
@@ -83,10 +101,8 @@ export class AdminController {
   }
 
   @Delete('movies/:contentId')
+  @AdminOnly()
   @ApiOperation({ summary: 'Удалить фильм (только админ)' })
-  @ApiParam({ name: 'contentId', description: 'UUID фильма' })
-  @ApiResponse({ status: 200, description: 'Фильм успешно удален' })
-  @ApiResponse({ status: 404, description: 'Фильм не найден' })
   async deleteMovie(
     @Param('contentId') contentId: string,
     @Authorized('id') userId: string,
@@ -97,12 +113,8 @@ export class AdminController {
   // ========== УПРАВЛЕНИЕ СЕРИАЛАМИ ==========
 
   @Post('series')
+  @AdminOnly()
   @ApiOperation({ summary: 'Создать новый сериал (только админ)' })
-  @ApiResponse({ status: 201, description: 'Сериал успешно создан' })
-  @ApiResponse({
-    status: 409,
-    description: 'Сериал с таким названием уже существует',
-  })
   async createSeries(
     @Body() dto: CreateSeriesDto,
     @Authorized('id') userId: string,
@@ -111,10 +123,8 @@ export class AdminController {
   }
 
   @Put('series/:contentId')
+  @AdminOnly()
   @ApiOperation({ summary: 'Обновить информацию о сериале (только админ)' })
-  @ApiParam({ name: 'contentId', description: 'UUID сериала' })
-  @ApiResponse({ status: 200, description: 'Сериал успешно обновлен' })
-  @ApiResponse({ status: 404, description: 'Сериал не найден' })
   async updateSeries(
     @Param('contentId') contentId: string,
     @Body() dto: UpdateSeriesDto,
@@ -124,10 +134,8 @@ export class AdminController {
   }
 
   @Delete('series/:contentId')
+  @AdminOnly()
   @ApiOperation({ summary: 'Удалить сериал (только админ)' })
-  @ApiParam({ name: 'contentId', description: 'UUID сериала' })
-  @ApiResponse({ status: 200, description: 'Сериал успешно удален' })
-  @ApiResponse({ status: 404, description: 'Сериал не найден' })
   async deleteSeries(
     @Param('contentId') contentId: string,
     @Authorized('id') userId: string,
@@ -138,8 +146,8 @@ export class AdminController {
   // ========== УПРАВЛЕНИЕ ЭПИЗОДАМИ ==========
 
   @Post('series/:seriesId/episodes')
+  @AdminOnly()
   @ApiOperation({ summary: 'Создать эпизод для сериала (только админ)' })
-  @ApiParam({ name: 'seriesId', description: 'UUID сериала' })
   async createEpisode(
     @Param('seriesId') seriesId: string,
     @Body() dto: CreateEpisodeDto,
@@ -149,8 +157,8 @@ export class AdminController {
   }
 
   @Put('episodes/:episodeId')
+  @AdminOnly()
   @ApiOperation({ summary: 'Обновить эпизод (только админ)' })
-  @ApiParam({ name: 'episodeId', description: 'UUID эпизода' })
   async updateEpisode(
     @Param('episodeId') episodeId: string,
     @Body() dto: UpdateEpisodeDto,
@@ -160,8 +168,8 @@ export class AdminController {
   }
 
   @Delete('episodes/:episodeId')
+  @AdminOnly()
   @ApiOperation({ summary: 'Удалить эпизод (только админ)' })
-  @ApiParam({ name: 'episodeId', description: 'UUID эпизода' })
   async deleteEpisode(
     @Param('episodeId') episodeId: string,
     @Authorized('id') userId: string,
@@ -172,24 +180,10 @@ export class AdminController {
   // ========== УПРАВЛЕНИЕ ИЗОБРАЖЕНИЯМИ ==========
 
   @Post('content/:contentId/poster')
+  @AdminOnly()
   @UseInterceptors(FileInterceptor('poster'))
-  @ApiOperation({
-    summary: 'Загрузить постер для контента (фильм или сериал) (только админ)',
-  })
+  @ApiOperation({ summary: 'Загрузить постер для контента (только админ)' })
   @ApiConsumes('multipart/form-data')
-  @ApiParam({ name: 'contentId', description: 'UUID контента' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        poster: {
-          type: 'string',
-          format: 'binary',
-          description: 'Файл постера (jpg, png, webp)',
-        },
-      },
-    },
-  })
   async uploadContentPoster(
     @Param('contentId') contentId: string,
     @UploadedFile() posterFile: Express.Multer.File,
@@ -199,24 +193,12 @@ export class AdminController {
   }
 
   @Post('content/:contentId/backdrop')
+  @AdminOnly()
   @UseInterceptors(FileInterceptor('backdrop'))
   @ApiOperation({
     summary: 'Загрузить фоновое изображение для контента (только админ)',
   })
   @ApiConsumes('multipart/form-data')
-  @ApiParam({ name: 'contentId', description: 'UUID контента' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        backdrop: {
-          type: 'string',
-          format: 'binary',
-          description: 'Файл фонового изображения',
-        },
-      },
-    },
-  })
   async uploadContentBackdrop(
     @Param('contentId') contentId: string,
     @UploadedFile() backdropFile: Express.Multer.File,
@@ -226,6 +208,7 @@ export class AdminController {
   }
 
   @Post('content/:contentId/images')
+  @AdminOnly()
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'poster', maxCount: 1 },
@@ -236,24 +219,6 @@ export class AdminController {
     summary: 'Загрузить несколько изображений для контента (только админ)',
   })
   @ApiConsumes('multipart/form-data')
-  @ApiParam({ name: 'contentId', description: 'UUID контента' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        poster: {
-          type: 'string',
-          format: 'binary',
-          description: 'Файл постера',
-        },
-        backdrop: {
-          type: 'string',
-          format: 'binary',
-          description: 'Файл фонового изображения',
-        },
-      },
-    },
-  })
   async uploadContentImages(
     @Param('contentId') contentId: string,
     @Authorized('id') userId: string,
@@ -269,10 +234,10 @@ export class AdminController {
   }
 
   @Delete('content/:contentId')
+  @AdminOnly()
   @ApiOperation({
     summary: 'Удалить контент (фильм или сериал) (только админ)',
   })
-  @ApiParam({ name: 'contentId', description: 'UUID контента' })
   async deleteContent(@Param('contentId') contentId: string) {
     return this.adminService.deleteContent(contentId);
   }
@@ -280,6 +245,7 @@ export class AdminController {
   // ========== УПРАВЛЕНИЕ ЖАНРАМИ ==========
 
   @Post('genres')
+  @AdminOnly()
   @ApiOperation({ summary: 'Создать новый жанр (только админ)' })
   async createGenre(
     @Body() dto: CreateGenreDto,
@@ -289,6 +255,7 @@ export class AdminController {
   }
 
   @Put('genres/:genreId')
+  @AdminOnly()
   @ApiOperation({ summary: 'Обновить жанр (только админ)' })
   @ApiParam({ name: 'genreId', description: 'UUID жанра' })
   async updateGenre(
@@ -300,6 +267,7 @@ export class AdminController {
   }
 
   @Delete('genres/:genreId')
+  @AdminOnly()
   @ApiOperation({ summary: 'Удалить жанр (только админ)' })
   @ApiParam({ name: 'genreId', description: 'UUID жанра' })
   async deleteGenre(
@@ -312,27 +280,10 @@ export class AdminController {
   // ========== УПРАВЛЕНИЕ ПЕРСОНАМИ ==========
 
   @Post('persons')
+  @AdminOnly()
   @UseInterceptors(FileInterceptor('personPhoto'))
-  @ApiOperation({
-    summary: 'Создать новую персону (актера, режиссера) (только админ)',
-  })
+  @ApiOperation({ summary: 'Создать новую персону (только админ)' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        fullname: { type: 'string' },
-        biography: { type: 'string' },
-        birthDate: { type: 'string', format: 'date' },
-        deathDate: { type: 'string', format: 'date', nullable: true },
-        personPhoto: {
-          type: 'string',
-          format: 'binary',
-          description: 'Фото персоны',
-        },
-      },
-    },
-  })
   async createPerson(
     @Body() dto: CreatePersonDto,
     @UploadedFile() personPhoto: Express.Multer.File,
@@ -342,6 +293,7 @@ export class AdminController {
   }
 
   @Put('persons/:personId')
+  @AdminOnly()
   @UseInterceptors(FileInterceptor('personPhoto'))
   @ApiOperation({ summary: 'Обновить информацию о персоне (только админ)' })
   @ApiConsumes('multipart/form-data')
@@ -356,6 +308,7 @@ export class AdminController {
   }
 
   @Delete('persons/:personId')
+  @AdminOnly()
   @ApiOperation({ summary: 'Удалить персону (только админ)' })
   @ApiParam({ name: 'personId', description: 'UUID персоны' })
   async deletePerson(
@@ -368,6 +321,7 @@ export class AdminController {
   // ========== УПРАВЛЕНИЕ РОЛЯМИ ПЕРСОН ==========
 
   @Post('person-roles')
+  @AdminOnly()
   @ApiOperation({ summary: 'Создать новую роль для персон (только админ)' })
   async createPersonRole(
     @Body() dto: CreatePersonRoleDto,
@@ -377,6 +331,7 @@ export class AdminController {
   }
 
   @Put('person-roles/:roleId')
+  @AdminOnly()
   @ApiOperation({ summary: 'Обновить роль персоны (только админ)' })
   @ApiParam({ name: 'roleId', description: 'UUID роли' })
   async updatePersonRole(
@@ -388,6 +343,7 @@ export class AdminController {
   }
 
   @Delete('person-roles/:roleId')
+  @AdminOnly()
   @ApiOperation({ summary: 'Удалить роль персоны (только админ)' })
   @ApiParam({ name: 'roleId', description: 'UUID роли' })
   async deletePersonRole(
@@ -400,12 +356,14 @@ export class AdminController {
   // ========== УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ ==========
 
   @Get('users')
+  @AdminOnly()
   @ApiOperation({ summary: 'Получить всех пользователей (только админ)' })
   async getUsers() {
     return await this.adminService.getUsers();
   }
 
   @Get('users/:id')
+  @AdminOnly()
   @ApiOperation({ summary: 'Получить пользователя по ID (только админ)' })
   @ApiParam({ name: 'id', description: 'UUID пользователя' })
   async getUserById(@Param('id') id: string) {
@@ -413,6 +371,7 @@ export class AdminController {
   }
 
   @Patch('users/:id/role')
+  @AdminOnly()
   @ApiOperation({ summary: 'Изменить роль пользователя (только админ)' })
   @ApiParam({ name: 'id', description: 'UUID пользователя' })
   async updateUserRole(
@@ -424,60 +383,33 @@ export class AdminController {
   }
 
   @Delete('users/:id')
+  @AdminOnly()
   @ApiOperation({ summary: 'Удалить пользователя (только админ)' })
   @ApiParam({ name: 'id', description: 'UUID пользователя' })
   async deleteUser(@Param('id') id: string, @Authorized('id') adminId: string) {
     return await this.adminService.deleteUser(id, adminId);
   }
 
-  // ========== УПРАВЛЕНИЕ КОММЕНТАРИЯМИ ==========
-
-  @Get('comments')
-  @AdminOrModerator()
-  @ApiOperation({ summary: 'Получить все комментарии (только админ)' })
-  async getComments(
-    @Query('status') status?: string,
-    @Query('page') page?: number,
-  ) {
-    return await this.adminService.getComments(status, page);
-  }
-
-  @Get('comments/:id')
-  @AdminOrModerator()
-  @ApiOperation({ summary: 'Получить комментарий по ID (только админ)' })
-  @ApiParam({ name: 'id', description: 'UUID комментария' })
-  async getCommentById(@Param('id') id: string) {
-    return await this.adminService.getCommentById(id);
-  }
-
-  @Delete('comments/:id')
-  @AdminOrModerator()
-  @ApiOperation({ summary: 'Удалить комментарий (только админ)' })
-  @ApiParam({ name: 'id', description: 'UUID комментария' })
-  async deleteComment(
-    @Param('id') id: string,
-    @Authorized('id') adminId: string,
-  ) {
-    return await this.adminService.deleteComment(id, adminId);
-  }
-
   // ========== УПРАВЛЕНИЕ ЖАЛОБАМИ ==========
 
   @Get('reports')
-  @ApiOperation({ summary: 'Получить все жалобы (только админ)' })
+  @AdminOrModerator()
+  @ApiOperation({ summary: 'Получить все жалобы (админ/модератор)' })
   async getReports() {
     return await this.adminService.getReports();
   }
 
   @Patch('reports/:id/resolve')
-  @ApiOperation({ summary: 'Решить жалобу (только админ)' })
+  @AdminOrModerator()
+  @ApiOperation({ summary: 'Решить жалобу (админ/модератор)' })
   @ApiParam({ name: 'id', description: 'UUID жалобы' })
   async resolveReport(@Param('id') id: string) {
     return await this.adminService.resolveReport(id);
   }
 
   @Patch('reports/:id/reject')
-  @ApiOperation({ summary: 'Отклонить жалобу (только админ)' })
+  @AdminOrModerator()
+  @ApiOperation({ summary: 'Отклонить жалобу (админ/модератор)' })
   @ApiParam({ name: 'id', description: 'UUID жалобы' })
   async rejectReport(@Param('id') id: string) {
     return await this.adminService.rejectReport(id);
