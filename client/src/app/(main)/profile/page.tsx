@@ -17,7 +17,6 @@ import { watchStatusApi } from '@/shared/api/watch-status/watch-status-api'
 import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { Tabs } from '@/shared/ui/Tabs'
-import { EmailVerification } from '@/widgets/email-verification/ui/email-verification'
 import {
 	Camera,
 	CheckCircle,
@@ -534,17 +533,6 @@ export default function ProfilePage() {
 								</div>
 							</div>
 						</div>
-					</div>
-
-					{/* Верификация email */}
-					<div className='mb-8'>
-						<EmailVerification
-							email={user.email}
-							isVerified={(user as any).emailVerified || false}
-							onVerified={() => {
-								updateUser({ emailVerified: true })
-							}}
-						/>
 					</div>
 
 					{/* Табы с контентом */}
