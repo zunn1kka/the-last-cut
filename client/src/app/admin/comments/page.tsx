@@ -1,7 +1,6 @@
 'use client'
 
 import { adminApi } from '@/shared/api/admin/admin-api'
-import { AdminGuard } from '@/shared/components/admin/AdminGuard'
 import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { DataTable } from '@/widgets/admin/data-table'
@@ -168,28 +167,26 @@ export default function AdminCommentsPage() {
 	]
 
 	return (
-		<AdminGuard requiredRole='both'>
-			<div>
-				<div className='flex justify-between items-center mb-6'>
-					<h1 className='text-3xl font-bold flex items-center'>
-						<MessageSquare className='w-8 h-8 mr-3' />
-						Управление комментариями
-					</h1>
-					<Link href='/admin/comments/reports'>
-						<Button variant='outline'>
-							<Flag className='w-4 h-4 mr-2' />
-							Жалобы
-						</Button>
-					</Link>
-				</div>
-
-				<DataTable
-					data={comments}
-					columns={columns}
-					loading={loading}
-					onDelete={handleDelete}
-				/>
+		<div>
+			<div className='flex justify-between items-center mb-6'>
+				<h1 className='text-3xl font-bold flex items-center'>
+					<MessageSquare className='w-8 h-8 mr-3' />
+					Управление комментариями
+				</h1>
+				<Link href='/admin/comments/reports'>
+					<Button variant='outline'>
+						<Flag className='w-4 h-4 mr-2' />
+						Жалобы
+					</Button>
+				</Link>
 			</div>
-		</AdminGuard>
+
+			<DataTable
+				data={comments}
+				columns={columns}
+				loading={loading}
+				onDelete={handleDelete}
+			/>
+		</div>
 	)
 }
