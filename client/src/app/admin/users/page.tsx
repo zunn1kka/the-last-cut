@@ -4,7 +4,7 @@ import { useAuth } from '@/features/auth/model/auth-context'
 import { adminApi } from '@/shared/api/admin/admin-api'
 import { AdminGuard } from '@/shared/components/admin/AdminGuard'
 import { DataTable } from '@/widgets/admin/data-table'
-import { CheckCircle, Shield, Users, XCircle } from 'lucide-react'
+import { Shield, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface User {
@@ -152,7 +152,6 @@ export default function AdminUsersPage() {
 	const columns = [
 		{ key: 'avatarUrl', label: 'Аватар', type: 'image' },
 		{ key: 'username', label: 'Имя пользователя' },
-		{ key: 'email', label: 'Email' },
 		{
 			key: 'role',
 			label: 'Роль',
@@ -190,25 +189,6 @@ export default function AdminUsersPage() {
 					</div>
 				)
 			},
-		},
-		{
-			key: 'emailVerified',
-			label: 'Email',
-			render: (item: User) => (
-				<span
-					className={`flex items-center ${item.emailVerified ? 'text-green-600' : 'text-red-600'}`}
-				>
-					{item.emailVerified ? (
-						<>
-							<CheckCircle className='w-4 h-4 mr-1' /> Подтвержден
-						</>
-					) : (
-						<>
-							<XCircle className='w-4 h-4 mr-1' /> Не подтвержден
-						</>
-					)}
-				</span>
-			),
 		},
 		{
 			key: 'actions',
