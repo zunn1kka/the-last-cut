@@ -32,6 +32,14 @@ export function EpisodeForm({
 		airDate: initialData?.airDate ? initialData.airDate.split('T')[0] : '',
 	})
 
+	// Получаем сегодняшнюю дату в формате YYYY-MM-DD
+	const today = new Date().toISOString().split('T')[0]
+
+	// Получаем дату 3 года назад (или любую другую)
+	const threeYearsAgo = new Date()
+	threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3)
+	const minDate = threeYearsAgo.toISOString().split('T')[0]
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setLoading(true)
@@ -182,9 +190,14 @@ export function EpisodeForm({
 								onChange={e =>
 									setFormData({ ...formData, airDate: e.target.value })
 								}
+								min={minDate}
+								max={today}
 								className='w-full pl-10 pr-3 py-2 bg-custom-darker border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
 							/>
 						</div>
+						<p className='text-xs text-gray-500 mt-1'>
+							Дата не может быть позже сегодняшнего дня и раньше {minDate}
+						</p>
 					</div>
 
 					<div>
