@@ -471,8 +471,10 @@ export default function ProfilePage() {
 
 											{user.bio && (
 												<div className='flex items-start'>
-													<UserIcon className='w-4 h-4 mr-2 mt-1' />
-													<p>{user.bio}</p>
+													<UserIcon className='w-4 h-4 mr-2 mt-1 flex-shrink-0' />
+													<p className='text-gray-400 break-words whitespace-pre-wrap overflow-hidden flex-1'>
+														{user.bio}
+													</p>
 												</div>
 											)}
 
