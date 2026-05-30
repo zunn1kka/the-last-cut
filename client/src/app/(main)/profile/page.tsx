@@ -387,7 +387,7 @@ export default function ProfilePage() {
 							</div>
 
 							{/* Информация */}
-							<div className='flex-1 w-full md:w-auto'>
+							<div className='flex-1 w-full md:w-auto min-w-0'>
 								{isEditing ? (
 									<form onSubmit={handleUpdateProfile} className='space-y-4'>
 										<div>
@@ -415,7 +415,8 @@ export default function ProfilePage() {
 													setFormData({ ...formData, bio: e.target.value })
 												}
 												rows={3}
-												className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-25'
+												className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y min-h-[80px]'
+												placeholder='Расскажите о себе...'
 											/>
 										</div>
 
@@ -436,10 +437,10 @@ export default function ProfilePage() {
 								) : (
 									<>
 										<div className='flex items-center justify-between mb-2 flex-wrap gap-2'>
-											<h1 className='text-2xl font-bold text-white'>
+											<h1 className='text-2xl font-bold text-white break-words'>
 												{user.username}
 											</h1>
-											<div className='flex space-x-2'>
+											<div className='flex space-x-2 flex-shrink-0'>
 												<Button
 													variant='outline'
 													size='sm'
@@ -461,12 +462,12 @@ export default function ProfilePage() {
 										</div>
 
 										<div className='space-y-2 text-gray-400'>
-											<div className='flex items-center'>
-												<Mail className='w-4 h-4 mr-2' />
-												<span>{user.email}</span>
+											<div className='flex items-start'>
+												<Mail className='w-4 h-4 mr-2 mt-0.5 flex-shrink-0' />
+												<span className='break-all flex-1'>{user.email}</span>
 												<button
 													onClick={() => setShowChangeEmail(true)}
-													className='text-xs text-blue-400 hover:text-blue-300 ml-2'
+													className='text-xs text-blue-400 hover:text-blue-300 ml-2 flex-shrink-0'
 												>
 													(сменить)
 												</button>
@@ -475,7 +476,7 @@ export default function ProfilePage() {
 											{user.bio && (
 												<div className='flex items-start'>
 													<UserIcon className='w-4 h-4 mr-2 mt-1 flex-shrink-0' />
-													<div className='flex-1'>
+													<div className='flex-1 min-w-0'>
 														<p className='text-gray-400 break-words whitespace-pre-wrap'>
 															{expandedBio || user.bio.length <= MAX_BIO_LENGTH
 																? user.bio
@@ -506,7 +507,7 @@ export default function ProfilePage() {
 							</div>
 
 							{/* Статистика */}
-							<div className='grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto'>
+							<div className='grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto flex-shrink-0'>
 								<div className='text-center px-3 py-2 bg-custom-darker rounded-lg border border-gray-800'>
 									<div className='text-xl md:text-2xl font-bold text-white'>
 										{stats.ratingsCount}
@@ -593,6 +594,7 @@ export default function ProfilePage() {
 												value={favoriteSortBy}
 												onChange={e => setFavoriteSortBy(e.target.value as any)}
 												className='px-3 py-1 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm'
+												style={{ colorScheme: 'dark' }}
 											>
 												<option
 													value='date'
@@ -760,21 +762,21 @@ export default function ProfilePage() {
 												>
 													<div className='p-5'>
 														<div className='flex items-start justify-between mb-2'>
-															<h3 className='text-xl font-semibold text-white group-hover:text-blue-400 transition-colors'>
+															<h3 className='text-xl font-semibold text-white group-hover:text-blue-400 transition-colors break-words flex-1 mr-2'>
 																{collection.title}
 															</h3>
 															{collection.isPublic ? (
-																<span className='text-xs text-green-400'>
+																<span className='text-xs text-green-400 flex-shrink-0'>
 																	Публичный
 																</span>
 															) : (
-																<span className='text-xs text-gray-500'>
+																<span className='text-xs text-gray-500 flex-shrink-0'>
 																	Приватный
 																</span>
 															)}
 														</div>
 														{collection.description && (
-															<p className='text-gray-400 text-sm mb-3 line-clamp-2'>
+															<p className='text-gray-400 text-sm mb-3 line-clamp-2 break-words'>
 																{collection.description}
 															</p>
 														)}
@@ -800,7 +802,7 @@ export default function ProfilePage() {
 																		/>
 																	) : (
 																		<div className='w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600'>
-																			<span className='text-white text-xs text-center px-1'>
+																			<span className='text-white text-xs text-center px-1 break-words'>
 																				{item.content.title.slice(0, 20)}
 																			</span>
 																		</div>
