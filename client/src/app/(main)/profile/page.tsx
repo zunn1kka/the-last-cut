@@ -89,6 +89,8 @@ const statusLabels: Record<
 }
 
 export default function ProfilePage() {
+	const MAX_BIO_LENGTH = 200
+
 	const { user, updateUser, logout } = useAuth()
 	const [isEditing, setIsEditing] = useState(false)
 	const [favoriteSortBy, setFavoriteSortBy] = useState<
@@ -101,6 +103,7 @@ export default function ProfilePage() {
 	const [avatarFile, setAvatarFile] = useState<File | null>(null)
 	const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 	const fileInputRef = useRef<HTMLInputElement>(null)
+	const [expandedBio, setExpandedBio] = useState(false)
 
 	const [stats, setStats] = useState<UserStats>({
 		ratingsCount: 0,
@@ -472,9 +475,21 @@ export default function ProfilePage() {
 											{user.bio && (
 												<div className='flex items-start'>
 													<UserIcon className='w-4 h-4 mr-2 mt-1 flex-shrink-0' />
-													<p className='text-gray-400 break-words whitespace-pre-wrap overflow-hidden flex-1'>
-														{user.bio}
-													</p>
+													<div className='flex-1'>
+														<p className='text-gray-400 break-words whitespace-pre-wrap'>
+															{expandedBio || user.bio.length <= MAX_BIO_LENGTH
+																? user.bio
+																: user.bio.substring(0, MAX_BIO_LENGTH) + '...'}
+														</p>
+														{user.bio.length > MAX_BIO_LENGTH && (
+															<button
+																onClick={() => setExpandedBio(!expandedBio)}
+																className='text-xs text-blue-400 hover:text-blue-300 mt-1'
+															>
+																{expandedBio ? 'Свернуть' : 'Читать далее'}
+															</button>
+														)}
+													</div>
 												</div>
 											)}
 
