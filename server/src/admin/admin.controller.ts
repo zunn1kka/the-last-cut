@@ -25,6 +25,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { AdminOrModerator } from 'src/auth/decorators/admin-or-moderator.decorator';
 import { AdminOnly } from 'src/auth/decorators/admin.decorator';
 import { Authorized } from 'src/auth/decorators/authorized.decorator';
 import { CreateMovieDto } from 'src/content/movie/dto/create-movie.dto';
@@ -432,6 +433,7 @@ export class AdminController {
   // ========== УПРАВЛЕНИЕ КОММЕНТАРИЯМИ ==========
 
   @Get('comments')
+  @AdminOrModerator()
   @ApiOperation({ summary: 'Получить все комментарии (только админ)' })
   async getComments(
     @Query('status') status?: string,
@@ -441,6 +443,7 @@ export class AdminController {
   }
 
   @Get('comments/:id')
+  @AdminOrModerator()
   @ApiOperation({ summary: 'Получить комментарий по ID (только админ)' })
   @ApiParam({ name: 'id', description: 'UUID комментария' })
   async getCommentById(@Param('id') id: string) {
@@ -448,6 +451,7 @@ export class AdminController {
   }
 
   @Delete('comments/:id')
+  @AdminOrModerator()
   @ApiOperation({ summary: 'Удалить комментарий (только админ)' })
   @ApiParam({ name: 'id', description: 'UUID комментария' })
   async deleteComment(
