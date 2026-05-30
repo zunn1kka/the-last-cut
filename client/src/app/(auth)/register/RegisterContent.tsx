@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 
-export default function RegisterPage() {
+export default function RegisterContent() {
 	const router = useRouter()
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -230,10 +230,24 @@ export default function RegisterPage() {
 		setLoading(true)
 
 		try {
+			// Отправляем запрос на регистрацию
 			await authApi.register(formData, avatar || undefined)
-			// Перенаправляем на страницу входа с параметром успешной регистрации
-			router.push('/login?registered=true')
+
+			// Очищаем форму
+			setFormData({
+				username: '',
+				email: '',
+				password: '',
+				confirmPassword: '',
+			})
+			setAvatar(null)
+			setAvatarPreview(null)
+
+			// Перенаправляем на страницу входа
+			// Используем replace вместо push, чтобы нельзя было вернуться назад
+			router.replace('/login?registered=true')
 		} catch (err: any) {
+			console.error('Registration error:', err)
 			const message = err.response?.data?.message || 'Ошибка регистрации'
 			if (typeof message === 'string') {
 				setErrors({ general: message })
