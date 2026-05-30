@@ -168,7 +168,7 @@ export default function AdminCommentsPage() {
 	]
 
 	return (
-		<AdminGuard requiredRole='MODERATOR'>
+		<AdminGuard requiredRole='both'>
 			<div>
 				<div className='flex justify-between items-center mb-6'>
 					<h1 className='text-3xl font-bold flex items-center'>
