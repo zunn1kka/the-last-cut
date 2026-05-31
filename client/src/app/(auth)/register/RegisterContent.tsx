@@ -233,19 +233,9 @@ export default function RegisterContent() {
 			// Отправляем запрос на регистрацию
 			await authApi.register(formData, avatar || undefined)
 
-			// Очищаем форму
-			setFormData({
-				username: '',
-				email: '',
-				password: '',
-				confirmPassword: '',
-			})
-			setAvatar(null)
-			setAvatarPreview(null)
-
-			// Перенаправляем на страницу входа
-			// Используем replace вместо push, чтобы нельзя было вернуться назад
-			router.replace('/login?registered=true')
+			// НЕМЕДЛЕННЫЙ РЕДИРЕКТ - не ждем очистки формы
+			// Используем window.location.href для мгновенного перехода
+			window.location.href = '/login?registered=true'
 		} catch (err: any) {
 			console.error('Registration error:', err)
 			const message = err.response?.data?.message || 'Ошибка регистрации'
@@ -344,6 +334,7 @@ export default function RegisterContent() {
 							</div>
 						</div>
 
+						{/* Остальные поля формы... (они такие же как и были) */}
 						{/* Имя пользователя */}
 						<div>
 							<label className='block text-sm font-medium text-gray-300 mb-2'>
