@@ -230,12 +230,9 @@ export default function RegisterContent() {
 		setLoading(true)
 
 		try {
-			// Отправляем запрос на регистрацию
 			await authApi.register(formData, avatar || undefined)
-
-			// НЕМЕДЛЕННЫЙ РЕДИРЕКТ - не ждем очистки формы
-			// Используем window.location.href для мгновенного перехода
-			window.location.href = '/login?registered=true'
+			// Просто переходим на страницу логина без параметров
+			window.location.href = '/login'
 		} catch (err: any) {
 			console.error('Registration error:', err)
 			const message = err.response?.data?.message || 'Ошибка регистрации'
@@ -261,7 +258,6 @@ export default function RegisterContent() {
 			</div>
 
 			<div className='relative max-w-md w-full'>
-				{/* Логотип */}
 				<div className='flex justify-center mb-6'>
 					<div className='w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg'>
 						<Film className='w-8 h-8 text-white' />
@@ -334,7 +330,6 @@ export default function RegisterContent() {
 							</div>
 						</div>
 
-						{/* Остальные поля формы... (они такие же как и были) */}
 						{/* Имя пользователя */}
 						<div>
 							<label className='block text-sm font-medium text-gray-300 mb-2'>
@@ -415,7 +410,6 @@ export default function RegisterContent() {
 								<p className='text-red-400 text-xs mt-1'>{errors.password}</p>
 							)}
 
-							{/* Индикатор силы пароля */}
 							{formData.password.length > 0 && (
 								<div className='mt-2'>
 									<div className='flex items-center gap-2'>
@@ -436,7 +430,6 @@ export default function RegisterContent() {
 								</div>
 							)}
 
-							{/* Требования к паролю */}
 							<div className='text-gray-500 text-xs mt-2 space-y-1'>
 								<p
 									className={
@@ -497,7 +490,6 @@ export default function RegisterContent() {
 							)}
 						</div>
 
-						{/* Кнопка регистрации */}
 						<Button
 							type='submit'
 							className='w-full mt-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-blue-500/25'

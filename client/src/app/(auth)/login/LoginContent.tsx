@@ -5,44 +5,22 @@ import { authApi } from '@/shared/api/auth/auth-api'
 import Button from '@/shared/ui/Button'
 import { Film, Lock, Mail } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 export function LoginContent() {
-	const router = useRouter()
-	const searchParams = useSearchParams()
 	const { login } = useAuth()
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
-	const [success, setSuccess] = useState('')
 	const [error, setError] = useState('')
 	const [loading, setLoading] = useState(false)
-
-	useEffect(() => {
-		// Проверяем параметр registered
-		const registered = searchParams.get('registered')
-		const fromRegister = searchParams.get('from')
-
-		if (registered === 'true') {
-			setSuccess('✅ Регистрация прошла успешно! Теперь вы можете войти.')
-
-			const url = new URL(window.location.href)
-			url.searchParams.delete('registered')
-			window.history.replaceState({}, '', url.toString())
-		} else if (fromRegister === 'true') {
-			setSuccess('✅ Аккаунт создан! Пожалуйста, войдите.')
-		}
-	}, [searchParams])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setLoading(true)
 		setError('')
-		setSuccess('')
 
 		try {
 			const response = await authApi.login({ email, password })
-			console.log('📥 Ответ от сервера:', response.data)
 
 			if (response.data.user) {
 				login(response.data.user)
@@ -61,7 +39,6 @@ export function LoginContent() {
 
 	return (
 		<div className='min-h-screen flex items-center justify-center bg-custom-darker px-4'>
-			{/* Фоновые декоративные элементы */}
 			<div className='absolute inset-0 overflow-hidden pointer-events-none'>
 				<div className='absolute -top-40 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl' />
 				<div className='absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl' />
@@ -87,12 +64,6 @@ export function LoginContent() {
 				{error && (
 					<div className='bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg mb-6 text-sm'>
 						{error}
-					</div>
-				)}
-
-				{success && (
-					<div className='bg-green-500/10 border border-green-500/20 text-green-400 p-3 rounded-lg mb-6 text-sm'>
-						{success}
 					</div>
 				)}
 
