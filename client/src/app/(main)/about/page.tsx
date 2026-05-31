@@ -148,7 +148,7 @@ export default function AboutPage() {
 							href='mailto:support@thelastcut.ru'
 							className='text-blue-400 hover:text-blue-300'
 						>
-							info@thelastcut.ru
+							thelastcut.notifications@gmail.com
 						</a>
 					</p>
 				</div>
