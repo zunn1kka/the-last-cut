@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-function LoginForm() {
+export function LoginForm() {
 	const router = useRouter()
 	const searchParams = useSearchParams()
 	const { login } = useAuth()
@@ -26,7 +26,7 @@ function LoginForm() {
 
 		if (registered === 'true') {
 			setSuccess('✅ Регистрация прошла успешно! Теперь вы можете войти.')
-			// Очищаем параметр из URL, чтобы при обновлении страницы сообщение не появлялось снова
+
 			const url = new URL(window.location.href)
 			url.searchParams.delete('registered')
 			window.history.replaceState({}, '', url.toString())
