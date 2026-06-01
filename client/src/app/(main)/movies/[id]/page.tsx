@@ -1,12 +1,35 @@
 'use client'
 
+import { useAuth } from '@/features/auth/model/auth-context'
 import { apiClient } from '@/shared/api/axios-instance'
+import { bookmarksApi } from '@/shared/api/bookmarks/bookmark-api'
+import {
+	Collection,
+	collectionsApi,
+} from '@/shared/api/collections/collections-api'
+import {
+	WatchStatus,
+	watchStatusApi,
+} from '@/shared/api/watch-status/watch-status-api'
 import { getImageUrl } from '@/shared/lib/get-image-url'
+import Button from '@/shared/ui/Button'
 import { Comments } from '@/widgets/comments'
-import { Calendar, Clock, Film, Star, User } from 'lucide-react'
+import {
+	Calendar,
+	CheckCircle,
+	Clock,
+	Eye,
+	Film,
+	FolderPlus,
+	Heart,
+	PlayCircle,
+	Star,
+	User,
+	XCircle,
+} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 interface Movie {
@@ -46,10 +69,64 @@ interface Movie {
 	}>
 }
 
+const statusOptions: {
+	value: WatchStatus
+	label: string
+	icon: React.ReactNode
+	color: string
+}[] = [
+	{
+		value: 'planned',
+		label: 'В планах',
+		icon: <Clock className='w-4 h-4' />,
+		color: 'text-yellow-400 border-yellow-400 hover:bg-yellow-400/10',
+	},
+	{
+		value: 'watching',
+		label: 'Смотрю',
+		icon: <PlayCircle className='w-4 h-4' />,
+		color: 'text-blue-400 border-blue-400 hover:bg-blue-400/10',
+	},
+	{
+		value: 'completed',
+		label: 'Просмотрено',
+		icon: <CheckCircle className='w-4 h-4' />,
+		color: 'text-green-400 border-green-400 hover:bg-green-400/10',
+	},
+	{
+		value: 'dropped',
+		label: 'Брошено',
+		icon: <XCircle className='w-4 h-4' />,
+		color: 'text-red-400 border-red-400 hover:bg-red-400/10',
+	},
+]
+
 export default function MoviePage() {
 	const { id } = useParams()
+	const router = useRouter()
+	const { user } = useAuth()
 	const [movie, setMovie] = useState<Movie | null>(null)
 	const [loading, setLoading] = useState(true)
+
+	// Состояния для избранного
+	const [isFavorite, setIsFavorite] = useState(false)
+	const [favoriteLoading, setFavoriteLoading] = useState(false)
+
+	// Состояния для статуса просмотра
+	const [currentStatus, setCurrentStatus] = useState<WatchStatus | null>(null)
+	const [statusLoading, setStatusLoading] = useState(false)
+	const [showStatusDropdown, setShowStatusDropdown] = useState(false)
+
+	// Состояния для сборников
+	const [showCollectionsModal, setShowCollectionsModal] = useState(false)
+	const [userCollections, setUserCollections] = useState<Collection[]>([])
+	const [collectionsLoading, setCollectionsLoading] = useState(false)
+
+	// Уведомления
+	const [notification, setNotification] = useState<{
+		type: 'success' | 'error'
+		message: string
+	} | null>(null)
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -57,9 +134,6 @@ export default function MoviePage() {
 			try {
 				const response = await apiClient.get(`/content/movies/${id}`)
 				console.log('📥 Movie data:', response.data)
-				console.log('📥 Duration:', response.data.movie?.duration)
-				console.log('📥 Genres count:', response.data.genres?.length)
-				console.log('📥 Persons count:', response.data.persons?.length)
 				setMovie(response.data)
 			} catch (error) {
 				console.error('Failed to fetch movie:', error)
@@ -69,6 +143,124 @@ export default function MoviePage() {
 		}
 		if (id) fetchData()
 	}, [id])
+
+	// Загрузка данных пользователя (избранное, статус)
+	useEffect(() => {
+		if (!user || !movie) return
+
+		const fetchUserData = async () => {
+			try {
+				const [favResponse, statusResponse] = await Promise.all([
+					bookmarksApi.checkBookmark(movie.id),
+					watchStatusApi
+						.getStatus(movie.id)
+						.catch(() => ({ data: { status: null } })),
+				])
+				setIsFavorite(favResponse.data.isBookmarked)
+				setCurrentStatus(statusResponse.data.status || null)
+			} catch (error) {
+				console.error('Failed to fetch user data:', error)
+			}
+		}
+
+		fetchUserData()
+	}, [user, movie])
+
+	const handleFavoriteClick = async () => {
+		if (!user) {
+			router.push('/login')
+			return
+		}
+
+		setFavoriteLoading(true)
+		try {
+			if (isFavorite) {
+				await bookmarksApi.removeBookmark(movie!.id)
+				setIsFavorite(false)
+				showNotification('success', 'Удалено из избранного')
+			} else {
+				await bookmarksApi.addBookmark(movie!.id)
+				setIsFavorite(true)
+				showNotification('success', 'Добавлено в избранное')
+			}
+		} catch (error) {
+			console.error('Failed to toggle favorite:', error)
+			showNotification('error', 'Ошибка при сохранении')
+		} finally {
+			setFavoriteLoading(false)
+		}
+	}
+
+	const handleStatusChange = async (status: WatchStatus) => {
+		if (!user) {
+			router.push('/login')
+			return
+		}
+
+		setStatusLoading(true)
+		try {
+			if (currentStatus === status) {
+				await watchStatusApi.deleteStatus(movie!.id)
+				setCurrentStatus(null)
+				showNotification('success', 'Статус удален')
+			} else {
+				await watchStatusApi.setStatus(movie!.id, status)
+				setCurrentStatus(status)
+				showNotification(
+					'success',
+					`Статус изменен на "${statusOptions.find(opt => opt.value === status)?.label}"`,
+				)
+			}
+		} catch (error) {
+			console.error('Failed to change watch status:', error)
+			showNotification('error', 'Ошибка при изменении статуса')
+		} finally {
+			setStatusLoading(false)
+			setShowStatusDropdown(false)
+		}
+	}
+
+	const fetchUserCollections = async () => {
+		try {
+			const response = await collectionsApi.getMyCollections()
+			setUserCollections(response.data)
+		} catch (error) {
+			console.error('Failed to fetch collections:', error)
+		}
+	}
+
+	const handleAddToCollection = async (collectionId: string) => {
+		if (!movie) return
+
+		const collection = userCollections.find(c => c.id === collectionId)
+		const isAlreadyInCollection = collection?.items?.some(
+			item => item.contentId === movie.id,
+		)
+
+		if (isAlreadyInCollection) {
+			showNotification('error', 'Фильм уже в этом сборнике!')
+			setShowCollectionsModal(false)
+			return
+		}
+
+		try {
+			await collectionsApi.addItem(collectionId, movie.id)
+			setShowCollectionsModal(false)
+			showNotification('success', 'Фильм добавлен в сборник!')
+		} catch (error) {
+			console.error('Failed to add to collection:', error)
+			showNotification('error', 'Ошибка при добавлении')
+		}
+	}
+
+	const showNotification = (type: 'success' | 'error', message: string) => {
+		setNotification({ type, message })
+		setTimeout(() => setNotification(null), 3000)
+	}
+
+	const currentStatusOption = statusOptions.find(
+		opt => opt.value === currentStatus,
+	)
 
 	if (loading) {
 		return (
@@ -203,6 +395,94 @@ export default function MoviePage() {
 							</div>
 						)}
 
+						{/* Кнопки действий */}
+						<div className='flex flex-wrap gap-3 mb-6'>
+							{/* Кнопка избранного */}
+							<button
+								onClick={handleFavoriteClick}
+								disabled={favoriteLoading}
+								className={`px-4 py-2 rounded-lg border transition-all duration-300 flex items-center gap-2 ${
+									isFavorite
+										? 'bg-red-500/20 border-red-500 text-red-400'
+										: 'border-gray-600 text-gray-400 hover:border-red-500 hover:text-red-400'
+								}`}
+							>
+								<Heart
+									className={`w-4 h-4 ${isFavorite ? 'fill-red-500' : ''}`}
+								/>
+								<span className='text-sm'>
+									{isFavorite ? 'В избранном' : 'В избранное'}
+								</span>
+							</button>
+
+							{/* Кнопка добавления в сборник */}
+							<button
+								onClick={() => {
+									fetchUserCollections()
+									setShowCollectionsModal(true)
+								}}
+								className='px-4 py-2 rounded-lg border border-gray-600 text-gray-400 hover:border-blue-500 hover:text-blue-400 transition-all duration-300 flex items-center gap-2'
+							>
+								<FolderPlus className='w-4 h-4' />
+								<span className='text-sm'>В сборник</span>
+							</button>
+
+							{/* Кнопка статуса просмотра */}
+							<div className='relative'>
+								<button
+									onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+									disabled={statusLoading}
+									className={`px-4 py-2 rounded-lg border transition-all duration-300 flex items-center gap-2 ${
+										currentStatusOption
+											? `${currentStatusOption.color} bg-opacity-10`
+											: 'border-gray-600 text-gray-400 hover:border-blue-500 hover:text-blue-400'
+									}`}
+								>
+									{currentStatusOption ? (
+										<>
+											{currentStatusOption.icon}
+											<span className='text-sm'>
+												{currentStatusOption.label}
+											</span>
+										</>
+									) : (
+										<>
+											<Eye className='w-4 h-4' />
+											<span className='text-sm'>Статус</span>
+										</>
+									)}
+								</button>
+
+								{showStatusDropdown && (
+									<>
+										<div
+											className='fixed inset-0 z-10'
+											onClick={() => setShowStatusDropdown(false)}
+										/>
+										<div className='absolute top-full left-0 mt-2 w-48 bg-custom-dark rounded-xl border border-gray-700 shadow-xl z-20 overflow-hidden'>
+											{statusOptions.map(option => (
+												<button
+													key={option.value}
+													onClick={() => handleStatusChange(option.value)}
+													className={`w-full px-4 py-2 flex items-center gap-2 transition-colors ${
+														currentStatus === option.value
+															? `${option.color} bg-opacity-10`
+															: 'text-gray-400 hover:bg-custom-darker hover:text-white'
+													}`}
+												>
+													{option.icon}
+													<span className='text-sm'>{option.label}</span>
+													{currentStatus === option.value && (
+														<CheckCircle className='w-4 h-4 ml-auto text-green-400' />
+													)}
+												</button>
+											))}
+										</div>
+									</>
+								)}
+							</div>
+						</div>
+
 						{/* Описание */}
 						{movie.description && (
 							<div className='mb-6'>
@@ -283,6 +563,88 @@ export default function MoviePage() {
 					<Comments contentId={movie.id} contentType='MOVIE' />
 				</div>
 			</div>
+
+			{/* Модальное окно выбора сборника */}
+			{showCollectionsModal && (
+				<>
+					<div
+						className='fixed inset-0 bg-black/80 z-50'
+						onClick={() => setShowCollectionsModal(false)}
+					/>
+					<div className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-custom-dark rounded-xl border border-gray-800 p-6 z-50'>
+						<h3 className='text-xl font-bold text-white mb-4'>
+							Добавить в сборник
+						</h3>
+
+						{userCollections.length === 0 ? (
+							<div className='text-center py-6'>
+								<p className='text-gray-500 mb-4'>У вас пока нет сборников</p>
+								<Link
+									href='/collections'
+									onClick={() => setShowCollectionsModal(false)}
+									className='text-blue-400 hover:underline'
+								>
+									Создать сборник
+								</Link>
+							</div>
+						) : (
+							<div className='space-y-2 max-h-96 overflow-y-auto'>
+								{userCollections.map(collection => {
+									const isAlreadyInCollection = collection.items?.some(
+										item => item.contentId === movie.id,
+									)
+									return (
+										<button
+											key={collection.id}
+											onClick={() => handleAddToCollection(collection.id)}
+											className='w-full text-left p-3 rounded-lg bg-custom-darker hover:bg-custom-darker/70 transition-colors border border-gray-800'
+										>
+											<div className='font-medium text-white'>
+												{collection.title}
+											</div>
+											{collection.description && (
+												<div className='text-xs text-gray-500 mt-1'>
+													{collection.description}
+												</div>
+											)}
+											<div className='text-xs text-gray-500 mt-1'>
+												{collection.items?.length || 0} фильмов
+												{isAlreadyInCollection && (
+													<span className='ml-2 text-green-400'>
+														✓ Уже добавлен
+													</span>
+												)}
+											</div>
+										</button>
+									)
+								})}
+							</div>
+						)}
+
+						<div className='flex justify-end mt-4'>
+							<Button
+								variant='outline'
+								onClick={() => setShowCollectionsModal(false)}
+							>
+								Отмена
+							</Button>
+						</div>
+					</div>
+				</>
+			)}
+
+			{/* Уведомление */}
+			{notification && (
+				<div
+					className={`fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg ${
+						notification.type === 'success'
+							? 'bg-green-500 text-white'
+							: 'bg-red-500 text-white'
+					}`}
+				>
+					{notification.message}
+				</div>
+			)}
 		</main>
 	)
 }
