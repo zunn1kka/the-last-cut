@@ -63,9 +63,7 @@ export function PersonForm({
 				deathDate: formatDateToYMD(initialData.deathDate),
 			})
 			if (initialData.photoUrl) {
-				setPhotoPreview(
-					`${process.env.NEXT_PUBLIC_API_URL}${initialData.photoUrl}`,
-				)
+				setPhotoPreview(getImageUrl(initialData.photoUrl))
 			}
 		}
 	}, [initialData])
