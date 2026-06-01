@@ -14,6 +14,7 @@ interface Movie {
 	title: string
 	releaseYear: number
 	duration?: string | number
+	durationMinutes: number
 }
 
 interface Filters {
@@ -183,13 +184,21 @@ function AdminMoviesPage() {
 						>
 							<Filter className='w-5 h-5' />
 							<span>Фильтры</span>
-							{(filters.title || filters.yearFrom || filters.yearTo || filters.durationFrom || filters.durationTo) && (
+							{(filters.title ||
+								filters.yearFrom ||
+								filters.yearTo ||
+								filters.durationFrom ||
+								filters.durationTo) && (
 								<span className='ml-2 px-2 py-0.5 text-xs bg-blue-600 text-white rounded-full'>
 									Активны
 								</span>
 							)}
 						</button>
-						{(filters.title || filters.yearFrom || filters.yearTo || filters.durationFrom || filters.durationTo) && (
+						{(filters.title ||
+							filters.yearFrom ||
+							filters.yearTo ||
+							filters.durationFrom ||
+							filters.durationTo) && (
 							<button
 								onClick={resetFilters}
 								className='flex items-center gap-1 text-sm text-red-400 hover:text-red-300 transition-colors'
@@ -226,7 +235,9 @@ function AdminMoviesPage() {
 								>
 									<option value=''>Любой</option>
 									{availableYears.map(year => (
-										<option key={year} value={year}>{year}</option>
+										<option key={year} value={year}>
+											{year}
+										</option>
 									))}
 								</select>
 							</div>
@@ -242,7 +253,9 @@ function AdminMoviesPage() {
 								>
 									<option value=''>Любой</option>
 									{availableYears.map(year => (
-										<option key={year} value={year}>{year}</option>
+										<option key={year} value={year}>
+											{year}
+										</option>
 									))}
 								</select>
 							</div>
@@ -253,12 +266,16 @@ function AdminMoviesPage() {
 								</label>
 								<select
 									value={filters.durationFrom}
-									onChange={e => handleFilterChange('durationFrom', e.target.value)}
+									onChange={e =>
+										handleFilterChange('durationFrom', e.target.value)
+									}
 									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 								>
 									<option value=''>Любая</option>
 									{durationOptions.map(d => (
-										<option key={d} value={d}>{d === 0 ? '0' : d}+'}</option>
+										<option key={d} value={d}>
+											{d === 0 ? '0' : `${d}+`}
+										</option>
 									))}
 								</select>
 							</div>
@@ -269,19 +286,27 @@ function AdminMoviesPage() {
 								</label>
 								<select
 									value={filters.durationTo}
-									onChange={e => handleFilterChange('durationTo', e.target.value)}
+									onChange={e =>
+										handleFilterChange('durationTo', e.target.value)
+									}
 									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 								>
 									<option value=''>Любая</option>
 									{durationOptions.map(d => (
-										<option key={d} value={d}>{d === 0 ? '0' : `до ${d}`}</option>
+										<option key={d} value={d}>
+											{d === 0 ? '0' : `до ${d}`}
+										</option>
 									))}
 								</select>
 							</div>
 						</div>
 					)}
 
-					{(filters.title || filters.yearFrom || filters.yearTo || filters.durationFrom || filters.durationTo) && (
+					{(filters.title ||
+						filters.yearFrom ||
+						filters.yearTo ||
+						filters.durationFrom ||
+						filters.durationTo) && (
 						<div className='mt-4 text-sm text-gray-400'>
 							Найдено: {filteredMovies.length} из {movies.length} фильмов
 						</div>
