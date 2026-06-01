@@ -1,6 +1,7 @@
 'use client'
 
 import { adminApi } from '@/shared/api/admin/admin-api'
+import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
 import { BookOpen, Calendar, Image as ImageIcon, User, X } from 'lucide-react'
 import Image from 'next/image'
@@ -26,9 +27,7 @@ export function PersonForm({
 
 	const [photoFile, setPhotoFile] = useState<File | null>(null)
 	const [photoPreview, setPhotoPreview] = useState<string | null>(
-		initialData?.photoUrl
-			? `${process.env.NEXT_PUBLIC_API_URL}${initialData.photoUrl}`
-			: null,
+		initialData?.photoUrl ? getImageUrl(initialData.photoUrl) : null,
 	)
 
 	const formatDateToYMD = (date: any): string => {
@@ -155,7 +154,6 @@ export function PersonForm({
 									src={photoPreview}
 									alt='Photo preview'
 									fill
-									unoptimized={true}
 									className='object-cover'
 								/>
 								<button
@@ -228,7 +226,7 @@ export function PersonForm({
 									setFormData({ ...formData, biography: e.target.value })
 								}
 								rows={6}
-								className='w-full pl-10 pr-3 py-2 bg-custom-darker border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+								className='w-full pl-10 pr-3 py-2 bg-custom-darker border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-25'
 								placeholder='Расскажите о персоне...'
 							/>
 						</div>

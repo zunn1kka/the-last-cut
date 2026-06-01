@@ -468,7 +468,7 @@ export function SeriesForm({
 							setFormData({ ...formData, description: e.target.value })
 						}
 						rows={5}
-						className='w-full px-3 py-2 bg-custom-darker border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+						className='w-full px-3 py-2 bg-custom-darker border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-25'
 						required
 					/>
 				</div>
