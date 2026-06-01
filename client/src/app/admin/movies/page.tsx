@@ -213,19 +213,6 @@ function AdminMoviesPage() {
 						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-800'>
 							<div>
 								<label className='block text-sm font-medium text-gray-300 mb-2'>
-									Название
-								</label>
-								<input
-									type='text'
-									value={filters.title}
-									onChange={e => handleFilterChange('title', e.target.value)}
-									placeholder='Поиск по названию...'
-									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-								/>
-							</div>
-
-							<div>
-								<label className='block text-sm font-medium text-gray-300 mb-2'>
 									Год (от)
 								</label>
 								<select

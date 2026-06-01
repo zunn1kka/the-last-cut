@@ -166,19 +166,6 @@ export default function AdminPersonsPage() {
 						<div className='grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-800'>
 							<div>
 								<label className='block text-sm font-medium text-gray-300 mb-2'>
-									Имя персоны
-								</label>
-								<input
-									type='text'
-									value={filters.fullname}
-									onChange={e => handleFilterChange('fullname', e.target.value)}
-									placeholder='Поиск по имени...'
-									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-								/>
-							</div>
-
-							<div>
-								<label className='block text-sm font-medium text-gray-300 mb-2'>
 									Наличие фото
 								</label>
 								<select
@@ -207,6 +194,7 @@ export default function AdminPersonsPage() {
 					loading={loading}
 					onEdit={handleEdit}
 					onDelete={handleDelete}
+					searchFields={['fullname']}
 				/>
 			</div>
 		</AdminGuard>
