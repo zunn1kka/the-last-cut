@@ -3,7 +3,7 @@ import { adminApi } from '@/shared/api/admin/admin-api'
 import { AdminGuard } from '@/shared/components/admin/AdminGuard'
 import Button from '@/shared/ui/Button'
 import { DataTable } from '@/widgets/admin/data-table'
-import { Filter, Plus, Search, X } from 'lucide-react'
+import { Filter, Plus, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -20,6 +20,8 @@ interface Filters {
 	title: string
 	yearFrom: string
 	yearTo: string
+	durationFrom: string
+	durationTo: string
 }
 
 function AdminMoviesPage() {
@@ -32,13 +34,13 @@ function AdminMoviesPage() {
 		title: '',
 		yearFrom: '',
 		yearTo: '',
+		durationFrom: '',
+		durationTo: '',
 	})
 
 	const fetchMovies = async () => {
 		try {
 			const response = await adminApi.getMovies()
-			console.log('📥 GET /admin/movies response:', response)
-
 			let moviesData = []
 			if (response?.data?.data) {
 				moviesData = response.data.data
@@ -54,6 +56,7 @@ function AdminMoviesPage() {
 				title: item.title,
 				releaseYear: item.releaseYear,
 				duration: item.movie?.duration ? `${item.movie.duration} мин` : '—',
+				durationMinutes: item.movie?.duration || 0,
 			}))
 
 			setMovies(formattedMovies)
@@ -71,26 +74,32 @@ function AdminMoviesPage() {
 		fetchMovies()
 	}, [])
 
-	// Применение фильтров
 	useEffect(() => {
 		let result = [...movies]
 
-		// Фильтр по названию
 		if (filters.title.trim()) {
 			const query = filters.title.toLowerCase()
 			result = result.filter(movie => movie.title.toLowerCase().includes(query))
 		}
 
-		// Фильтр по году (от)
 		if (filters.yearFrom) {
 			const yearFrom = parseInt(filters.yearFrom)
 			result = result.filter(movie => movie.releaseYear >= yearFrom)
 		}
 
-		// Фильтр по году (до)
 		if (filters.yearTo) {
 			const yearTo = parseInt(filters.yearTo)
 			result = result.filter(movie => movie.releaseYear <= yearTo)
+		}
+
+		if (filters.durationFrom) {
+			const durationFrom = parseInt(filters.durationFrom)
+			result = result.filter(movie => movie.durationMinutes >= durationFrom)
+		}
+
+		if (filters.durationTo) {
+			const durationTo = parseInt(filters.durationTo)
+			result = result.filter(movie => movie.durationMinutes <= durationTo)
 		}
 
 		setFilteredMovies(result)
@@ -105,14 +114,16 @@ function AdminMoviesPage() {
 			title: '',
 			yearFrom: '',
 			yearTo: '',
+			durationFrom: '',
+			durationTo: '',
 		})
 	}
 
 	const columns = [
 		{ key: 'posterUrl', label: 'Постер', type: 'image' },
-		{ key: 'title', label: 'Название' },
-		{ key: 'releaseYear', label: 'Год' },
-		{ key: 'duration', label: 'Длительность' },
+		{ key: 'title', label: 'Название', sortable: true },
+		{ key: 'releaseYear', label: 'Год', sortable: true },
+		{ key: 'duration', label: 'Длительность', sortable: true },
 	]
 
 	const handleEdit = (movie: Movie) => {
@@ -120,64 +131,24 @@ function AdminMoviesPage() {
 	}
 
 	const handleDelete = async (id: string) => {
-		console.log('🗑️ Начинаем удаление фильма с ID:', id)
-
 		if (confirm('Вы уверены, что хотите удалить этот фильм?')) {
-			console.log('✅ Пользователь подтвердил удаление')
-
 			try {
-				console.log('📤 Отправляем DELETE запрос на:', `/admin/movies/${id}`)
-
-				const response = await adminApi.deleteMovie(id)
-
-				console.log('📥 Ответ от сервера:', {
-					status: response.status,
-					statusText: response.statusText,
-					data: response.data,
-					headers: response.headers,
-				})
-
-				if (response.status === 200 || response.status === 204) {
-					console.log('✅ Фильм успешно удален на сервере')
-
-					setMovies(prev => {
-						const newMovies = prev.filter(movie => movie.id !== id)
-						console.log('🔄 Обновленный список фильмов:', newMovies)
-						return newMovies
-					})
-
-					alert('Фильм успешно удален')
-				} else {
-					console.log('⚠️ Неожиданный статус ответа:', response.status)
-					alert('Ошибка при удалении фильма')
-				}
+				await adminApi.deleteMovie(id)
+				setMovies(prev => prev.filter(movie => movie.id !== id))
+				alert('Фильм успешно удален')
 			} catch (error: any) {
-				console.error('❌ Ошибка при удалении:', error)
-
-				if (error.response) {
-					console.error('Статус ошибки:', error.response.status)
-					console.error('Данные ошибки:', error.response.data)
-
-					const errorMessage =
-						error.response.data?.message || 'Ошибка при удалении фильма'
-					alert(`Ошибка: ${errorMessage}`)
-				} else if (error.request) {
-					alert('Сервер не отвечает. Проверьте подключение.')
-				} else {
-					console.error('Ошибка запроса:', error.message)
-					alert('Ошибка при отправке запроса')
-				}
+				console.error('Failed to delete movie:', error)
+				alert(error.response?.data?.message || 'Ошибка при удалении фильма')
 			}
-		} else {
-			console.log('❌ Пользователь отменил удаление')
 		}
 	}
 
-	// Получить уникальные годы для селекта
 	const availableYears = Array.from(
 		{ length: new Date().getFullYear() - 1950 + 1 },
 		(_, i) => 1950 + i,
 	).reverse()
+
+	const durationOptions = [0, 30, 60, 90, 120, 150, 180, 210, 240]
 
 	return (
 		<AdminGuard requiredRole='ADMIN'>
@@ -204,7 +175,6 @@ function AdminMoviesPage() {
 					</div>
 				</div>
 
-				{/* Панель фильтрации */}
 				<div className='bg-custom-dark rounded-xl border border-gray-800 p-4 mb-6'>
 					<div className='flex items-center justify-between mb-4'>
 						<button
@@ -213,13 +183,13 @@ function AdminMoviesPage() {
 						>
 							<Filter className='w-5 h-5' />
 							<span>Фильтры</span>
-							{(filters.title || filters.yearFrom || filters.yearTo) && (
+							{(filters.title || filters.yearFrom || filters.yearTo || filters.durationFrom || filters.durationTo) && (
 								<span className='ml-2 px-2 py-0.5 text-xs bg-blue-600 text-white rounded-full'>
 									Активны
 								</span>
 							)}
 						</button>
-						{(filters.title || filters.yearFrom || filters.yearTo) && (
+						{(filters.title || filters.yearFrom || filters.yearTo || filters.durationFrom || filters.durationTo) && (
 							<button
 								onClick={resetFilters}
 								className='flex items-center gap-1 text-sm text-red-400 hover:text-red-300 transition-colors'
@@ -231,77 +201,87 @@ function AdminMoviesPage() {
 					</div>
 
 					{showFilters && (
-						<div className='grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-800'>
+						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-800'>
 							<div>
 								<label className='block text-sm font-medium text-gray-300 mb-2'>
 									Название
 								</label>
-								<div className='relative'>
-									<Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500' />
-									<input
-										type='text'
-										value={filters.title}
-										onChange={e => handleFilterChange('title', e.target.value)}
-										placeholder='Поиск по названию...'
-										className='w-full pl-9 pr-4 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-									/>
-								</div>
+								<input
+									type='text'
+									value={filters.title}
+									onChange={e => handleFilterChange('title', e.target.value)}
+									placeholder='Поиск по названию...'
+									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+								/>
 							</div>
 
 							<div>
 								<label className='block text-sm font-medium text-gray-300 mb-2'>
-									Год выпуска (от)
+									Год (от)
 								</label>
 								<select
 									value={filters.yearFrom}
 									onChange={e => handleFilterChange('yearFrom', e.target.value)}
 									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-									style={{ colorScheme: 'dark' }}
 								>
-									<option value='' className='bg-custom-darker text-white'>
-										Любой
-									</option>
+									<option value=''>Любой</option>
 									{availableYears.map(year => (
-										<option
-											key={year}
-											value={year}
-											className='bg-custom-darker text-white'
-										>
-											{year}
-										</option>
+										<option key={year} value={year}>{year}</option>
 									))}
 								</select>
 							</div>
 
 							<div>
 								<label className='block text-sm font-medium text-gray-300 mb-2'>
-									Год выпуска (до)
+									Год (до)
 								</label>
 								<select
 									value={filters.yearTo}
 									onChange={e => handleFilterChange('yearTo', e.target.value)}
 									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-									style={{ colorScheme: 'dark' }}
 								>
-									<option value='' className='bg-custom-darker text-white'>
-										Любой
-									</option>
+									<option value=''>Любой</option>
 									{availableYears.map(year => (
-										<option
-											key={year}
-											value={year}
-											className='bg-custom-darker text-white'
-										>
-											{year}
-										</option>
+										<option key={year} value={year}>{year}</option>
+									))}
+								</select>
+							</div>
+
+							<div>
+								<label className='block text-sm font-medium text-gray-300 mb-2'>
+									Длительность (от, мин)
+								</label>
+								<select
+									value={filters.durationFrom}
+									onChange={e => handleFilterChange('durationFrom', e.target.value)}
+									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+								>
+									<option value=''>Любая</option>
+									{durationOptions.map(d => (
+										<option key={d} value={d}>{d === 0 ? '0' : d}+'}</option>
+									))}
+								</select>
+							</div>
+
+							<div>
+								<label className='block text-sm font-medium text-gray-300 mb-2'>
+									Длительность (до, мин)
+								</label>
+								<select
+									value={filters.durationTo}
+									onChange={e => handleFilterChange('durationTo', e.target.value)}
+									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+								>
+									<option value=''>Любая</option>
+									{durationOptions.map(d => (
+										<option key={d} value={d}>{d === 0 ? '0' : `до ${d}`}</option>
 									))}
 								</select>
 							</div>
 						</div>
 					)}
 
-					{/* Информация о результатах фильтрации */}
-					{(filters.title || filters.yearFrom || filters.yearTo) && (
+					{(filters.title || filters.yearFrom || filters.yearTo || filters.durationFrom || filters.durationTo) && (
 						<div className='mt-4 text-sm text-gray-400'>
 							Найдено: {filteredMovies.length} из {movies.length} фильмов
 						</div>
@@ -314,7 +294,6 @@ function AdminMoviesPage() {
 					loading={loading}
 					onEdit={handleEdit}
 					onDelete={handleDelete}
-					searchFields={['title']}
 				/>
 			</div>
 		</AdminGuard>

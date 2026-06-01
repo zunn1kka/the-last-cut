@@ -4,7 +4,7 @@ import { adminApi } from '@/shared/api/admin/admin-api'
 import { AdminGuard } from '@/shared/components/admin/AdminGuard'
 import Button from '@/shared/ui/Button'
 import { DataTable } from '@/widgets/admin/data-table'
-import { Filter, Plus, Search, Users, X } from 'lucide-react'
+import { Filter, Plus, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -14,10 +14,12 @@ interface Person {
 	fullname: string
 	photoUrl?: string
 	biography?: string
+	createdAt?: string
 }
 
 interface Filters {
 	fullname: string
+	hasPhoto: string
 }
 
 export default function AdminPersonsPage() {
@@ -28,6 +30,7 @@ export default function AdminPersonsPage() {
 	const [showFilters, setShowFilters] = useState(false)
 	const [filters, setFilters] = useState<Filters>({
 		fullname: '',
+		hasPhoto: '',
 	})
 
 	useEffect(() => {
@@ -49,16 +52,20 @@ export default function AdminPersonsPage() {
 		}
 	}
 
-	// Применение фильтров
 	useEffect(() => {
 		let result = [...persons]
 
-		// Фильтр по имени
 		if (filters.fullname.trim()) {
 			const query = filters.fullname.toLowerCase()
 			result = result.filter(person =>
 				person.fullname.toLowerCase().includes(query),
 			)
+		}
+
+		if (filters.hasPhoto === 'yes') {
+			result = result.filter(person => person.photoUrl)
+		} else if (filters.hasPhoto === 'no') {
+			result = result.filter(person => !person.photoUrl)
 		}
 
 		setFilteredPersons(result)
@@ -69,9 +76,7 @@ export default function AdminPersonsPage() {
 	}
 
 	const resetFilters = () => {
-		setFilters({
-			fullname: '',
-		})
+		setFilters({ fullname: '', hasPhoto: '' })
 	}
 
 	const handleEdit = (person: Person) => {
@@ -83,8 +88,10 @@ export default function AdminPersonsPage() {
 			try {
 				await adminApi.deletePerson(id)
 				setPersons(persons.filter(p => p.id !== id))
+				alert('Персона успешно удалена')
 			} catch (error) {
 				console.error('Failed to delete person:', error)
+				alert('Ошибка при удалении персоны')
 			}
 		}
 	}
@@ -96,24 +103,21 @@ export default function AdminPersonsPage() {
 	}
 
 	const columns = [
-		{ key: 'photoUrl', label: 'Фото', type: 'image' },
-		{ key: 'fullname', label: 'Имя' },
+		{ key: 'photoUrl', label: 'Фото', type: 'image', sortable: true },
+		{ key: 'fullname', label: 'Имя', sortable: true },
 		{
 			key: 'biography',
 			label: 'Биография',
 			render: (item: Person) => truncateText(item.biography, 60),
+			sortable: true,
 		},
-		{ key: 'actions', label: 'Действия', type: 'actions' },
 	]
 
 	return (
 		<AdminGuard requiredRole='ADMIN'>
 			<div>
 				<div className='flex justify-between items-center mb-6'>
-					<h1 className='text-3xl font-bold flex items-center'>
-						<Users className='w-8 h-8 mr-3' />
-						Управление персонами
-					</h1>
+					<h1 className='text-3xl font-bold'>Управление персонами</h1>
 					<div className='flex gap-2'>
 						<Button
 							variant='outline'
@@ -133,7 +137,6 @@ export default function AdminPersonsPage() {
 					</div>
 				</div>
 
-				{/* Панель фильтрации */}
 				<div className='bg-custom-dark rounded-xl border border-gray-800 p-4 mb-6'>
 					<div className='flex items-center justify-between mb-4'>
 						<button
@@ -142,16 +145,16 @@ export default function AdminPersonsPage() {
 						>
 							<Filter className='w-5 h-5' />
 							<span>Фильтры</span>
-							{filters.fullname && (
+							{(filters.fullname || filters.hasPhoto) && (
 								<span className='ml-2 px-2 py-0.5 text-xs bg-blue-600 text-white rounded-full'>
 									Активны
 								</span>
 							)}
 						</button>
-						{filters.fullname && (
+						{(filters.fullname || filters.hasPhoto) && (
 							<button
 								onClick={resetFilters}
-								className='flex items-center gap-1 text-sm text-red-400 hover:text-red-300 transition-colors'
+								className='flex items-center gap-1 text-sm text-red-400 hover:text-red-300'
 							>
 								<X className='w-4 h-4' />
 								Сбросить все
@@ -165,23 +168,33 @@ export default function AdminPersonsPage() {
 								<label className='block text-sm font-medium text-gray-300 mb-2'>
 									Имя персоны
 								</label>
-								<div className='relative'>
-									<Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500' />
-									<input
-										type='text'
-										value={filters.fullname}
-										onChange={e =>
-											handleFilterChange('fullname', e.target.value)
-										}
-										placeholder='Поиск по имени...'
-										className='w-full pl-9 pr-4 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-									/>
-								</div>
+								<input
+									type='text'
+									value={filters.fullname}
+									onChange={e => handleFilterChange('fullname', e.target.value)}
+									placeholder='Поиск по имени...'
+									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+								/>
+							</div>
+
+							<div>
+								<label className='block text-sm font-medium text-gray-300 mb-2'>
+									Наличие фото
+								</label>
+								<select
+									value={filters.hasPhoto}
+									onChange={e => handleFilterChange('hasPhoto', e.target.value)}
+									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+								>
+									<option value=''>Все</option>
+									<option value='yes'>Есть фото</option>
+									<option value='no'>Нет фото</option>
+								</select>
 							</div>
 						</div>
 					)}
 
-					{filters.fullname && (
+					{(filters.fullname || filters.hasPhoto) && (
 						<div className='mt-4 text-sm text-gray-400'>
 							Найдено: {filteredPersons.length} из {persons.length} персон
 						</div>
@@ -194,7 +207,6 @@ export default function AdminPersonsPage() {
 					loading={loading}
 					onEdit={handleEdit}
 					onDelete={handleDelete}
-					searchFields={['fullname']}
 				/>
 			</div>
 		</AdminGuard>
