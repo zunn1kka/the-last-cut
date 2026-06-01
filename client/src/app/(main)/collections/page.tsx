@@ -36,6 +36,7 @@ export default function CollectionsPage() {
 		isPublic: true,
 	})
 	const [creating, setCreating] = useState(false)
+	const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
 	// Фильтрация сборников
 	const filteredCollections = useMemo(() => {
@@ -128,6 +129,15 @@ export default function CollectionsPage() {
 		setSortOrder('desc')
 		setFilterPublic('all')
 	}
+
+	// Закрыть меню при клике вне
+	useEffect(() => {
+		const handleClickOutside = () => {
+			setOpenMenuId(null)
+		}
+		document.addEventListener('click', handleClickOutside)
+		return () => document.removeEventListener('click', handleClickOutside)
+	}, [])
 
 	if (loading) {
 		return (
@@ -262,31 +272,45 @@ export default function CollectionsPage() {
 						{filteredCollections.map(collection => (
 							<div
 								key={collection.id}
-								className='bg-custom-dark rounded-xl border border-gray-800 hover:border-gray-700 transition-all overflow-hidden group'
+								className='bg-custom-dark rounded-xl border border-gray-800 hover:border-gray-700 transition-all overflow-hidden'
 							>
 								<div className='p-5'>
 									<div className='flex items-start justify-between mb-2'>
 										<Link
 											href={`/collections/${collection.id}`}
-											className='flex-1 group'
+											className='flex-1'
 										>
-											<h2 className='text-xl font-semibold text-white group-hover:text-blue-400 transition-colors line-clamp-1'>
+											<h2 className='text-xl font-semibold text-white hover:text-blue-400 transition-colors line-clamp-1'>
 												{collection.title}
 											</h2>
 										</Link>
+
+										{/* Кнопка с тремя точками */}
 										<div className='relative'>
-											<button className='p-1 text-gray-500 hover:text-white transition-colors'>
+											<button
+												onClick={e => {
+													e.stopPropagation()
+													setOpenMenuId(
+														openMenuId === collection.id ? null : collection.id,
+													)
+												}}
+												className='p-1 text-gray-500 hover:text-white transition-colors'
+											>
 												<MoreVertical className='w-5 h-5' />
 											</button>
-											<div className='absolute right-0 mt-1 w-36 bg-custom-dark border border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10'>
-												<button
-													onClick={() => handleDelete(collection.id)}
-													className='w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-red-950/50 flex items-center gap-2 rounded-b-lg'
-												>
-													<Trash2 className='w-4 h-4' />
-													Удалить
-												</button>
-											</div>
+
+											{/* Выпадающее меню */}
+											{openMenuId === collection.id && (
+												<div className='absolute right-0 mt-1 w-36 bg-custom-dark border border-gray-700 rounded-lg shadow-lg z-10'>
+													<button
+														onClick={() => handleDelete(collection.id)}
+														className='w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-red-950/50 flex items-center gap-2 rounded-lg'
+													>
+														<Trash2 className='w-4 h-4' />
+														Удалить
+													</button>
+												</div>
+											)}
 										</div>
 									</div>
 
@@ -381,7 +405,7 @@ export default function CollectionsPage() {
 												title: e.target.value,
 											})
 										}
-										className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+										className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-25'
 										placeholder='Например: Любимые фильмы'
 									/>
 									{!newCollection.title.trim() && (
@@ -403,7 +427,7 @@ export default function CollectionsPage() {
 											})
 										}
 										rows={3}
-										className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-25'
+										className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[80px]'
 										placeholder='Коротко о сборнике...'
 									/>
 								</div>
