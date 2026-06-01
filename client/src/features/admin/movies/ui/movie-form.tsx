@@ -6,7 +6,7 @@ import { personRolesApi } from '@/shared/api/person-roles/person-roles-api'
 import { personsApi } from '@/shared/api/persons/persons-api'
 import { getImageUrl } from '@/shared/lib/get-image-url'
 import Button from '@/shared/ui/Button'
-import { Image as ImageIcon, Plus, Search, X } from 'lucide-react'
+import { Image as ImageIcon, Plus, Search, Upload, X } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -36,13 +36,14 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 		Record<string, any>
 	>({})
 
+	// Для изображений
 	const [posterFile, setPosterFile] = useState<File | null>(null)
 	const [posterPreview, setPosterPreview] = useState<string | null>(
-		initialData?.posterUrl ? `${getImageUrl(initialData.posterUrl)}` : null,
+		initialData?.posterUrl ? getImageUrl(initialData.posterUrl) : null,
 	)
 	const [backdropFile, setBackdropFile] = useState<File | null>(null)
 	const [backdropPreview, setBackdropPreview] = useState<string | null>(
-		initialData?.backdropUrl ? `${getImageUrl(initialData.backdropUrl)}` : null,
+		initialData?.backdropUrl ? getImageUrl(initialData.backdropUrl) : null,
 	)
 
 	const [formData, setFormData] = useState({
@@ -131,16 +132,55 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 		}
 	}
 
+	const uploadPoster = async () => {
+		if (!posterFile || !movieId) return
+
+		setUploadingPoster(true)
+		try {
+			await adminApi.uploadContentPoster(movieId, posterFile)
+			setPosterFile(null)
+			// Обновляем превью
+			const reader = new FileReader()
+			reader.onloadend = () => setPosterPreview(reader.result as string)
+			reader.readAsDataURL(posterFile)
+			alert('Постер успешно загружен')
+		} catch (error) {
+			console.error('Failed to upload poster:', error)
+			alert('Ошибка при загрузке постера')
+		} finally {
+			setUploadingPoster(false)
+			if (posterInputRef.current) posterInputRef.current.value = ''
+		}
+	}
+
+	const uploadBackdrop = async () => {
+		if (!backdropFile || !movieId) return
+
+		setUploadingBackdrop(true)
+		try {
+			await adminApi.uploadContentBackdrop(movieId, backdropFile)
+			setBackdropFile(null)
+			const reader = new FileReader()
+			reader.onloadend = () => setBackdropPreview(reader.result as string)
+			reader.readAsDataURL(backdropFile)
+			alert('Фоновое изображение успешно загружено')
+		} catch (error) {
+			console.error('Failed to upload backdrop:', error)
+			alert('Ошибка при загрузке фонового изображения')
+		} finally {
+			setUploadingBackdrop(false)
+			if (backdropInputRef.current) backdropInputRef.current.value = ''
+		}
+	}
+
 	const removePoster = () => {
-		setPosterFile(null)
 		setPosterPreview(null)
-		if (posterInputRef.current) posterInputRef.current.value = ''
+		// Здесь можно добавить API вызов для удаления постера
 	}
 
 	const removeBackdrop = () => {
-		setBackdropFile(null)
 		setBackdropPreview(null)
-		if (backdropInputRef.current) backdropInputRef.current.value = ''
+		// Здесь можно добавить API вызов для удаления фона
 	}
 
 	const addPerson = (person: any) => {
@@ -196,36 +236,28 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 				throw new Error('Выберите хотя бы один жанр')
 
 			const dataToSend = {
-				...formData,
+				title: formData.title,
+				originalTitle: formData.originalTitle,
+				description: formData.description,
+				releaseYear: Number(formData.releaseYear) || new Date().getFullYear(),
+				duration: Number(formData.duration) || 0,
+				budget: formData.budget ? Number(formData.budget) : undefined,
+				ageRating: formData.ageRating || undefined,
 				imdbRating: formData.imdbRating
 					? parseFloat(formData.imdbRating)
 					: undefined,
 				kinopoiskRating: formData.kinopoiskRating
 					? parseFloat(formData.kinopoiskRating)
 					: undefined,
-				budget: formData.budget ? parseFloat(formData.budget) : undefined,
-				duration: Number(formData.duration) || 0,
-				releaseYear: Number(formData.releaseYear) || new Date().getFullYear(),
+				genreIds: formData.genreIds,
+				persons: formData.persons,
 			}
-
-			let response
-			let newMovieId = movieId
 
 			if (isEditing && movieId) {
-				response = await adminApi.updateMovie(movieId, dataToSend)
+				await adminApi.updateMovie(movieId, dataToSend)
 			} else {
-				response = await adminApi.createMovie(dataToSend)
-				newMovieId = response.data.id
-			}
-
-			if (posterFile && newMovieId) {
-				setUploadingPoster(true)
-				await adminApi.uploadContentPoster(newMovieId, posterFile)
-			}
-
-			if (backdropFile && newMovieId) {
-				setUploadingBackdrop(true)
-				await adminApi.uploadContentBackdrop(newMovieId, backdropFile)
+				const response = await adminApi.createMovie(dataToSend)
+				// После создания можно загрузить постер и фон отдельно
 			}
 
 			router.push('/admin/movies')
@@ -239,8 +271,6 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 			)
 		} finally {
 			setLoading(false)
-			setUploadingPoster(false)
-			setUploadingBackdrop(false)
 		}
 	}
 
@@ -255,43 +285,62 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 						<label className='block text-sm font-medium text-gray-300 mb-2'>
 							Постер
 						</label>
-						<div
-							onClick={handlePosterClick}
-							className='relative aspect-[2/3] w-full max-w-[200px] bg-custom-darker rounded-lg overflow-hidden cursor-pointer border-2 border-dashed border-gray-600 hover:border-blue-500 transition-colors'
-						>
-							{posterPreview ? (
-								<>
-									<Image
-										src={posterPreview}
-										alt='Poster preview'
-										fill
-										className='object-cover'
-									/>
-									<button
-										type='button'
-										onClick={e => {
-											e.stopPropagation()
-											removePoster()
-										}}
-										className='absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600'
-									>
-										<X className='w-4 h-4' />
-									</button>
-								</>
-							) : (
-								<div className='absolute inset-0 flex flex-col items-center justify-center text-gray-500'>
-									<ImageIcon className='w-8 h-8 mb-2' />
-									<span className='text-sm'>Нажмите для загрузки</span>
-								</div>
+						<div className='flex flex-col items-center gap-3'>
+							<div
+								onClick={handlePosterClick}
+								className='relative aspect-[2/3] w-full max-w-[200px] bg-custom-darker rounded-lg overflow-hidden cursor-pointer border-2 border-dashed border-gray-600 hover:border-blue-500 transition-colors'
+							>
+								{posterPreview ? (
+									<>
+										<Image
+											src={posterPreview}
+											alt='Poster preview'
+											fill
+											className='object-cover'
+										/>
+										<button
+											type='button'
+											onClick={e => {
+												e.stopPropagation()
+												removePoster()
+											}}
+											className='absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 z-10'
+										>
+											<X className='w-4 h-4' />
+										</button>
+									</>
+								) : (
+									<div className='absolute inset-0 flex flex-col items-center justify-center text-gray-500'>
+										<ImageIcon className='w-8 h-8 mb-2' />
+										<span className='text-sm'>Нажмите для выбора</span>
+									</div>
+								)}
+							</div>
+							<input
+								ref={posterInputRef}
+								type='file'
+								accept='image/*'
+								onChange={handlePosterChange}
+								className='hidden'
+							/>
+							{posterFile && isEditing && (
+								<Button
+									type='button'
+									size='sm'
+									onClick={uploadPoster}
+									disabled={uploadingPoster}
+									className='flex items-center gap-2'
+								>
+									<Upload className='w-4 h-4' />
+									{uploadingPoster ? 'Загрузка...' : 'Загрузить постер'}
+								</Button>
+							)}
+							{!isEditing && posterFile && (
+								<p className='text-xs text-blue-400'>
+									Постер будет загружен после создания фильма
+								</p>
 							)}
 						</div>
-						<input
-							ref={posterInputRef}
-							type='file'
-							accept='image/*'
-							onChange={handlePosterChange}
-							className='hidden'
-						/>
 					</div>
 
 					{/* Backdrop */}
@@ -299,48 +348,67 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 						<label className='block text-sm font-medium text-gray-300 mb-2'>
 							Фоновое изображение
 						</label>
-						<div
-							onClick={handleBackdropClick}
-							className='relative aspect-video w-full max-w-[400px] bg-custom-darker rounded-lg overflow-hidden cursor-pointer border-2 border-dashed border-gray-600 hover:border-blue-500 transition-colors'
-						>
-							{backdropPreview ? (
-								<>
-									<Image
-										src={backdropPreview}
-										alt='Backdrop preview'
-										fill
-										className='object-cover'
-									/>
-									<button
-										type='button'
-										onClick={e => {
-											e.stopPropagation()
-											removeBackdrop()
-										}}
-										className='absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600'
-									>
-										<X className='w-4 h-4' />
-									</button>
-								</>
-							) : (
-								<div className='absolute inset-0 flex flex-col items-center justify-center text-gray-500'>
-									<ImageIcon className='w-8 h-8 mb-2' />
-									<span className='text-sm'>Нажмите для загрузки</span>
-								</div>
+						<div className='flex flex-col items-center gap-3'>
+							<div
+								onClick={handleBackdropClick}
+								className='relative aspect-video w-full max-w-[400px] bg-custom-darker rounded-lg overflow-hidden cursor-pointer border-2 border-dashed border-gray-600 hover:border-blue-500 transition-colors'
+							>
+								{backdropPreview ? (
+									<>
+										<Image
+											src={backdropPreview}
+											alt='Backdrop preview'
+											fill
+											className='object-cover'
+										/>
+										<button
+											type='button'
+											onClick={e => {
+												e.stopPropagation()
+												removeBackdrop()
+											}}
+											className='absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 z-10'
+										>
+											<X className='w-4 h-4' />
+										</button>
+									</>
+								) : (
+									<div className='absolute inset-0 flex flex-col items-center justify-center text-gray-500'>
+										<ImageIcon className='w-8 h-8 mb-2' />
+										<span className='text-sm'>Нажмите для выбора</span>
+									</div>
+								)}
+							</div>
+							<input
+								ref={backdropInputRef}
+								type='file'
+								accept='image/*'
+								onChange={handleBackdropChange}
+								className='hidden'
+							/>
+							{backdropFile && isEditing && (
+								<Button
+									type='button'
+									size='sm'
+									onClick={uploadBackdrop}
+									disabled={uploadingBackdrop}
+									className='flex items-center gap-2'
+								>
+									<Upload className='w-4 h-4' />
+									{uploadingBackdrop ? 'Загрузка...' : 'Загрузить фон'}
+								</Button>
+							)}
+							{!isEditing && backdropFile && (
+								<p className='text-xs text-blue-400'>
+									Фон будет загружен после создания фильма
+								</p>
 							)}
 						</div>
-						<input
-							ref={backdropInputRef}
-							type='file'
-							accept='image/*'
-							onChange={handleBackdropChange}
-							className='hidden'
-						/>
 					</div>
 				</div>
 			</div>
 
-			{/* Основная информация */}
+			{/* Основная информация - без изменений */}
 			<div className='bg-custom-dark rounded-lg shadow-xl border border-gray-800 p-6'>
 				<h2 className='text-xl font-bold text-white mb-4'>
 					Основная информация
@@ -618,7 +686,7 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 									<div className='relative w-8 h-8 rounded-full overflow-hidden bg-custom-dark flex-shrink-0'>
 										{personData.photoUrl ? (
 											<img
-												src={`${process.env.NEXT_PUBLIC_API_URL}${personData.photoUrl}`}
+												src={getImageUrl(personData.photoUrl)}
 												alt={personData.fullname}
 												className='w-full h-full object-cover'
 											/>
@@ -704,19 +772,12 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 				>
 					Отмена
 				</Button>
-				<Button
-					type='submit'
-					disabled={loading || uploadingPoster || uploadingBackdrop}
-				>
+				<Button type='submit' disabled={loading}>
 					{loading
 						? 'Сохранение...'
-						: uploadingPoster
-							? 'Загрузка постера...'
-							: uploadingBackdrop
-								? 'Загрузка фона...'
-								: isEditing
-									? 'Сохранить изменения'
-									: 'Создать фильм'}
+						: isEditing
+							? 'Сохранить изменения'
+							: 'Создать фильм'}
 				</Button>
 			</div>
 		</form>
