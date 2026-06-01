@@ -98,6 +98,12 @@ export default function ReportsPage() {
 		}
 	}
 
+	const truncateText = (text: string, maxLength: number = 200) => {
+		if (!text) return '—'
+		if (text.length <= maxLength) return text
+		return text.substring(0, maxLength) + '...'
+	}
+
 	if (loading) {
 		return (
 			<div className='flex justify-center py-12'>
@@ -123,12 +129,12 @@ export default function ReportsPage() {
 							key={report.id}
 							className='bg-custom-dark rounded-xl border border-gray-800 p-4'
 						>
-							<div className='flex items-start justify-between'>
-								<div className='flex-1'>
+							<div className='flex flex-col sm:flex-row items-start justify-between gap-4'>
+								<div className='flex-1 min-w-0'>
 									{/* Кто пожаловался */}
 									<div className='mb-2'>
 										<span className='text-sm text-gray-500'>Жалоба от: </span>
-										<span className='text-sm text-white font-medium'>
+										<span className='text-sm text-white font-medium break-words'>
 											{report.user?.username || 'Неизвестный пользователь'}
 										</span>
 									</div>
@@ -138,16 +144,19 @@ export default function ReportsPage() {
 										<div className='text-xs text-gray-500 mb-1'>
 											Комментарий:
 										</div>
-										<div className='text-sm text-gray-300'>
-											{report.comment?.text || 'Комментарий не найден'}
+										<div className='text-sm text-gray-300 break-words whitespace-pre-wrap overflow-hidden'>
+											{truncateText(
+												report.comment?.text || 'Комментарий не найден',
+												300,
+											)}
 										</div>
 										{report.comment?.user && (
-											<div className='text-xs text-gray-500 mt-1'>
+											<div className='text-xs text-gray-500 mt-1 break-words'>
 												Автор комментария: {report.comment.user.username}
 											</div>
 										)}
 										{report.comment?.content && (
-											<div className='text-xs text-gray-500'>
+											<div className='text-xs text-gray-500 break-words'>
 												Фильм/Сериал: {report.comment.content.title}
 											</div>
 										)}
@@ -156,13 +165,15 @@ export default function ReportsPage() {
 									{/* Причина жалобы */}
 									<div className='mb-2'>
 										<span className='text-sm text-gray-500'>Причина: </span>
-										<span className='text-sm text-white'>{report.reason}</span>
+										<span className='text-sm text-white break-words whitespace-pre-wrap'>
+											{truncateText(report.reason, 200)}
+										</span>
 									</div>
 
 									{/* Статус */}
 									<div>
 										<span
-											className={`text-xs px-2 py-1 rounded ${getStatusColor(report.status)}`}
+											className={`inline-flex text-xs px-2 py-1 rounded ${getStatusColor(report.status)}`}
 										>
 											{getStatusText(report.status)}
 										</span>
@@ -171,7 +182,7 @@ export default function ReportsPage() {
 
 								{/* Кнопки действий */}
 								{report.status === 'pending' && (
-									<div className='flex gap-2 ml-4'>
+									<div className='flex gap-2 flex-shrink-0'>
 										<button
 											onClick={() => handleResolve(report.id)}
 											className='p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors'
