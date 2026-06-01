@@ -396,6 +396,7 @@ export default function CollectionsPage() {
 									</label>
 									<textarea
 										value={newCollection.description}
+										className='min-h-25'
 										onChange={e =>
 											setNewCollection({
 												...newCollection,
