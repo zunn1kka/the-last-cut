@@ -127,8 +127,6 @@ export class AdminService {
           originalTitle: dto.originalTitle,
           description: dto.description,
           releaseYear: dto.releaseYear,
-          posterUrl: '',
-          backdropUrl: null,
           imdbRating: dto.imdbRating,
           kinopoiskRating: dto.kinopoiskRating,
           ageRating: dto.ageRating,
