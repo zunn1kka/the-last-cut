@@ -344,19 +344,6 @@ export default function AdminUsersPage() {
 						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-800'>
 							<div>
 								<label className='block text-sm font-medium text-gray-300 mb-2'>
-									Имя пользователя
-								</label>
-								<input
-									type='text'
-									value={filters.username}
-									onChange={e => handleFilterChange('username', e.target.value)}
-									placeholder='Поиск по имени...'
-									className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-								/>
-							</div>
-
-							<div>
-								<label className='block text-sm font-medium text-gray-300 mb-2'>
 									Email
 								</label>
 								<input
@@ -387,10 +374,7 @@ export default function AdminUsersPage() {
 						</div>
 					)}
 
-					{(filters.username ||
-						filters.email ||
-						filters.role ||
-						filters.emailVerified) && (
+					{(filters.username || filters.email || filters.role) && (
 						<div className='mt-4 text-sm text-gray-400'>
 							Найдено: {filteredUsers.length} из {users.length} пользователей
 						</div>
