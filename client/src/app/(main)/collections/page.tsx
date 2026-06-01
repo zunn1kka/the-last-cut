@@ -396,7 +396,6 @@ export default function CollectionsPage() {
 									</label>
 									<textarea
 										value={newCollection.description}
-										className='min-h-25'
 										onChange={e =>
 											setNewCollection({
 												...newCollection,
@@ -404,7 +403,7 @@ export default function CollectionsPage() {
 											})
 										}
 										rows={3}
-										className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+										className='w-full px-3 py-2 bg-custom-darker border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-25'
 										placeholder='Коротко о сборнике...'
 									/>
 								</div>
