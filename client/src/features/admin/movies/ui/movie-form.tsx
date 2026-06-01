@@ -36,35 +36,89 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 		Record<string, any>
 	>({})
 
+	// Для изображений - сохраняем оригинальные URL
 	const [posterFile, setPosterFile] = useState<File | null>(null)
-	const [posterPreview, setPosterPreview] = useState<string | null>(
-		initialData?.posterUrl ? `${getImageUrl(initialData.posterUrl)}` : null,
-	)
+	const [posterPreview, setPosterPreview] = useState<string | null>(null)
 	const [backdropFile, setBackdropFile] = useState<File | null>(null)
-	const [backdropPreview, setBackdropPreview] = useState<string | null>(
-		initialData?.backdropUrl ? `${getImageUrl(initialData.backdropUrl)}` : null,
+	const [backdropPreview, setBackdropPreview] = useState<string | null>(null)
+
+	// Сохраняем оригинальные URL для случая, если файлы не менялись
+	const [originalPosterUrl, setOriginalPosterUrl] = useState<string | null>(
+		null,
+	)
+	const [originalBackdropUrl, setOriginalBackdropUrl] = useState<string | null>(
+		null,
 	)
 
 	const [formData, setFormData] = useState({
-		title: initialData?.title || '',
-		originalTitle: initialData?.originalTitle || '',
-		description: initialData?.description || '',
-		releaseYear: initialData?.releaseYear || new Date().getFullYear(),
-		duration: initialData?.movie?.duration || 0,
-		budget: initialData?.movie?.budget || 0,
-		ageRating: initialData?.ageRating || '',
-		imdbRating: initialData?.imdbRating || '',
-		kinopoiskRating: initialData?.kinopoiskRating || '',
-		genreIds:
-			initialData?.genres?.map((g: any) => g.genre?.id || g.genreId) || [],
-		persons:
-			initialData?.persons?.map((p: any) => ({
-				personId: p.person?.id || p.personId,
-				roleId: p.role?.id || p.roleId,
-				roleName: p.roleName || '',
-				importance: p.importance || 5,
-			})) || [],
+		title: '',
+		originalTitle: '',
+		description: '',
+		releaseYear: new Date().getFullYear(),
+		duration: 0,
+		budget: 0,
+		ageRating: '',
+		imdbRating: '',
+		kinopoiskRating: '',
+		genreIds: [] as string[],
+		persons: [] as any[],
 	})
+
+	// Инициализация данных при монтировании
+	useEffect(() => {
+		if (initialData) {
+			setFormData({
+				title: initialData.title || '',
+				originalTitle: initialData.originalTitle || '',
+				description: initialData.description || '',
+				releaseYear: initialData.releaseYear || new Date().getFullYear(),
+				duration: initialData.movie?.duration || 0,
+				budget: initialData.movie?.budget || 0,
+				ageRating: initialData.ageRating || '',
+				imdbRating: initialData.imdbRating || '',
+				kinopoiskRating: initialData.kinopoiskRating || '',
+				genreIds:
+					initialData.genres?.map((g: any) => g.genre?.id || g.genreId) || [],
+				persons:
+					initialData.persons?.map((p: any) => ({
+						personId: p.person?.id || p.personId,
+						roleId: p.role?.id || p.roleId,
+						roleName: p.roleName || '',
+						importance: p.importance || 5,
+					})) || [],
+			})
+
+			// Сохраняем оригинальные URL изображений
+			if (initialData.posterUrl) {
+				const posterUrl = getImageUrl(initialData.posterUrl)
+				setPosterPreview(posterUrl)
+				setOriginalPosterUrl(posterUrl)
+			}
+			if (initialData.backdropUrl) {
+				const backdropUrl = getImageUrl(initialData.backdropUrl)
+				setBackdropPreview(backdropUrl)
+				setOriginalBackdropUrl(backdropUrl)
+			}
+
+			// Загружаем данные о персонах для отображения
+			if (initialData.persons?.length) {
+				const personsMap: Record<string, any> = {}
+				initialData.persons.forEach((p: any) => {
+					const person = p.person
+					if (person) {
+						personsMap[person.id] = {
+							fullname: person.fullname,
+							photoUrl: person.photoUrl,
+							birthDate: person.birthDate,
+							deathDate: person.deathDate,
+							biography: person.biography,
+						}
+					}
+				})
+				setSelectedPersonsData(personsMap)
+			}
+		}
+	}, [initialData])
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -134,12 +188,14 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 	const removePoster = () => {
 		setPosterFile(null)
 		setPosterPreview(null)
+		setOriginalPosterUrl(null)
 		if (posterInputRef.current) posterInputRef.current.value = ''
 	}
 
 	const removeBackdrop = () => {
 		setBackdropFile(null)
 		setBackdropPreview(null)
+		setOriginalBackdropUrl(null)
 		if (backdropInputRef.current) backdropInputRef.current.value = ''
 	}
 
@@ -195,37 +251,47 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 			if (formData.genreIds.length === 0)
 				throw new Error('Выберите хотя бы один жанр')
 
+			// Сначала обновляем основные данные фильма
 			const dataToSend = {
-				...formData,
+				title: formData.title,
+				originalTitle: formData.originalTitle,
+				description: formData.description,
+				releaseYear: Number(formData.releaseYear) || new Date().getFullYear(),
+				duration: Number(formData.duration) || 0,
+				budget: formData.budget ? Number(formData.budget) : undefined,
+				ageRating: formData.ageRating || undefined,
 				imdbRating: formData.imdbRating
 					? parseFloat(formData.imdbRating)
 					: undefined,
 				kinopoiskRating: formData.kinopoiskRating
 					? parseFloat(formData.kinopoiskRating)
 					: undefined,
-				budget: formData.budget ? parseFloat(formData.budget) : undefined,
-				duration: Number(formData.duration) || 0,
-				releaseYear: Number(formData.releaseYear) || new Date().getFullYear(),
+				genreIds: formData.genreIds,
+				persons: formData.persons,
 			}
 
-			let response
-			let newMovieId = movieId
+			let currentMovieId = movieId
 
 			if (isEditing && movieId) {
-				response = await adminApi.updateMovie(movieId, dataToSend)
+				// Обновляем существующий фильм
+				await adminApi.updateMovie(movieId, dataToSend)
+				currentMovieId = movieId
 			} else {
-				response = await adminApi.createMovie(dataToSend)
-				newMovieId = response.data.id
+				// Создаем новый фильм
+				const response = await adminApi.createMovie(dataToSend)
+				currentMovieId = response.data.id
 			}
 
-			if (posterFile && newMovieId) {
+			// Загружаем новый постер, только если выбран новый файл
+			if (posterFile && currentMovieId) {
 				setUploadingPoster(true)
-				await adminApi.uploadContentPoster(newMovieId, posterFile)
+				await adminApi.uploadContentPoster(currentMovieId, posterFile)
 			}
 
-			if (backdropFile && newMovieId) {
+			// Загружаем новый бэкдроп, только если выбран новый файл
+			if (backdropFile && currentMovieId) {
 				setUploadingBackdrop(true)
-				await adminApi.uploadContentBackdrop(newMovieId, backdropFile)
+				await adminApi.uploadContentBackdrop(currentMovieId, backdropFile)
 			}
 
 			router.push('/admin/movies')
@@ -293,6 +359,11 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 							onChange={handlePosterChange}
 							className='hidden'
 						/>
+						{originalPosterUrl && !posterFile && (
+							<p className='text-xs text-green-400 mt-1'>
+								✓ Текущий постер сохранен
+							</p>
+						)}
 					</div>
 
 					{/* Backdrop */}
@@ -338,10 +409,16 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 							onChange={handleBackdropChange}
 							className='hidden'
 						/>
+						{originalBackdropUrl && !backdropFile && (
+							<p className='text-xs text-green-400 mt-1'>
+								✓ Текущий фон сохранен
+							</p>
+						)}
 					</div>
 				</div>
 			</div>
 
+			{/* Остальная форма без изменений... */}
 			{/* Основная информация */}
 			<div className='bg-custom-dark rounded-lg shadow-xl border border-gray-800 p-6'>
 				<h2 className='text-xl font-bold text-white mb-4'>
@@ -556,7 +633,6 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 					</Button>
 				</div>
 
-				{/* Поиск персон */}
 				{showPersonSearch && (
 					<div className='mb-6 p-4 bg-custom-darker border border-gray-700 rounded-lg'>
 						<div className='flex justify-between items-center mb-4'>
@@ -597,7 +673,6 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 										<div className='font-medium text-white'>
 											{person.fullname}
 										</div>
-										{/* Вместо даты рождения показываем биографию (первые 80 символов) */}
 										{person.biography && (
 											<div className='text-sm text-gray-400 line-clamp-2 mt-1'>
 												{person.biography.length > 80
@@ -612,26 +687,23 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 					</div>
 				)}
 
-				{/* Список выбранных персон */}
 				{formData.persons.length > 0 && (
 					<div className='space-y-4'>
 						{formData.persons.map(person => {
-							const personData = selectedPersonsData[person.personId] ||
-								persons.find(p => p.id === person.personId) || {
-									fullname: 'Загрузка...',
-									biography: '',
-								}
+							const personData = selectedPersonsData[person.personId] || {
+								fullname: 'Загрузка...',
+								biography: '',
+							}
 
 							return (
 								<div
 									key={person.personId}
 									className='flex items-center gap-4 p-4 bg-custom-darker border border-gray-700 rounded-lg'
 								>
-									{/* Аватар */}
 									<div className='relative w-8 h-8 rounded-full overflow-hidden bg-custom-dark flex-shrink-0'>
 										{personData.photoUrl ? (
 											<img
-												src={`${process.env.NEXT_PUBLIC_API_URL}${personData.photoUrl}`}
+												src={getImageUrl(personData.photoUrl)}
 												alt={personData.fullname}
 												className='w-full h-full object-cover'
 											/>
@@ -642,12 +714,10 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 										)}
 									</div>
 
-									{/* Информация */}
 									<div className='flex-1'>
 										<div className='font-medium text-white'>
 											{personData.fullname}
 										</div>
-										{/* Вместо дат показываем биографию (первые 60 символов) */}
 										{personData.biography && (
 											<div className='text-xs text-gray-400 mt-1 line-clamp-1'>
 												{personData.biography.length > 60
@@ -657,7 +727,6 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 										)}
 									</div>
 
-									{/* Роль */}
 									<select
 										value={person.roleId}
 										onChange={e =>
@@ -673,7 +742,6 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 										))}
 									</select>
 
-									{/* Важность */}
 									<input
 										type='number'
 										min='1'
@@ -696,7 +764,6 @@ export function MovieForm({ initialData, isEditing, movieId }: MovieFormProps) {
 										title='Важность (1-10, где 10 - главная роль)'
 									/>
 
-									{/* Удалить */}
 									<button
 										type='button'
 										onClick={() => removePerson(person.personId)}
