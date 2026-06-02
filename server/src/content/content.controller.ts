@@ -106,16 +106,13 @@ export class ContentController {
   async findAllSeries() {
     return await this.seriesService.findAll();
   }
-  @Get('/series/777')
-  async findAllSeriess() {
-    return await this.seriesService.findAll();
-  }
+  // @Get('/series/777')
+  // async findAllSeriess() {
+  //   return await this.seriesService.findAll();
+  // }
 
   @Get('/series/:seriesId')
   async findOneSeries(@Param('seriesId') seriesId: string) {
-    console.log('🔍 Получен запрос на сериал с id:', seriesId);
-    console.log('🔍 Тип id:', typeof seriesId);
-    console.log('🔍 Длина id:', seriesId?.length);
     return await this.seriesService.findOne(seriesId);
   }
 
