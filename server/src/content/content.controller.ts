@@ -106,7 +106,7 @@ export class ContentController {
   async findAllSeries() {
     return await this.seriesService.findAll();
   }
-  @Get('/series/777')
+  @Get('/series/777s')
   async findAllSeriess() {
     return await this.seriesService.findAll();
   }
