@@ -21,15 +21,10 @@ const nextConfig: NextConfig = {
 		formats: ['image/webp'],
 	},
 	async rewrites() {
-		const apiUrl = process.env.NEXT_PUBLIC_API_URL
-		if (!apiUrl) {
-			console.warn('NEXT_PUBLIC_API_URL is not defined')
-			return []
-		}
 		return [
 			{
-				source: '/api/:path*',
-				destination: `${apiUrl}/:path*`,
+				source: '/:path*',
+				destination: 'https://the-last-cut-production.up.railway.app/:path*',
 			},
 		]
 	},

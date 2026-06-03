@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 export const apiClient = axios.create({
-	baseURL: process.env.BACK_URL,
+	baseURL: 'https://the-last-cut-production.up.railway.app',
 	withCredentials: true,
 	headers: {
 		'Content-Type': 'application/json',
