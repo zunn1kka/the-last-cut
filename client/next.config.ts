@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
 	async rewrites() {
 		return [
 			{
-				source: '/:path*',
+				source: '/api/:path*',
 				destination: 'https://the-last-cut-production.up.railway.app/:path*',
 			},
 		]
