@@ -130,13 +130,28 @@ export class ContentService {
     };
   }
 
-  async findOne(contentId: string) {
+  async findOne(id: string) {
     const content = await this.prismaService.content.findUnique({
-      where: { id: contentId },
+      where: { id },
+      include: {
+        movie: true,
+        series: true,
+        genres: {
+          include: { genre: true },
+        },
+        persons: {
+          include: {
+            person: true,
+            role: true,
+          },
+        },
+      },
     });
+
     if (!content) {
-      throw new NotFoundException('Такого фильма или сериала нет');
+      throw new NotFoundException('Контент не найден');
     }
+
     return content;
   }
 }
