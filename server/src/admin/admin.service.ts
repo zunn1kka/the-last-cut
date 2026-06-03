@@ -36,7 +36,12 @@ export class AdminService {
     deathDate: true,
   };
 
-  async createMovie(dto: CreateMovieDto, userId: string) {
+  async createMovie(
+    dto: CreateMovieDto,
+    posterFile: Express.Multer.File | undefined,
+    backdropFile: Express.Multer.File | undefined,
+    userId: string,
+  ) {
     const existingMovie = await this.prismaService.content.findFirst({
       where: {
         OR: [{ title: dto.title }, { originalTitle: dto.originalTitle }],
@@ -98,7 +103,13 @@ export class AdminService {
     return this.getMovieWithDetails(content.id);
   }
 
-  async updateMovie(contentId: string, dto: UpdateMovieDto, userId: string) {
+  async updateMovie(
+    contentId: string,
+    dto: UpdateMovieDto,
+    posterFile: Express.Multer.File | undefined,
+    backdropFile: Express.Multer.File | undefined,
+    userId: string,
+  ) {
     const existingMovie = await this.prismaService.content.findFirst({
       where: {
         OR: [{ title: dto.title }, { originalTitle: dto.originalTitle }],
