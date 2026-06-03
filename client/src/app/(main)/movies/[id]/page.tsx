@@ -132,7 +132,7 @@ export default function MoviePage() {
 		const fetchData = async () => {
 			setLoading(true)
 			try {
-				const response = await apiClient.get(`/content/movies/${id}`)
+				const response = await apiClient.get(`/content/${id}`)
 				console.log('📥 Movie data:', response.data)
 				setMovie(response.data)
 			} catch (error) {
