@@ -26,4 +26,10 @@ export class CreateMovieDto extends CreateContentDto {
   @Min(0, { message: 'Бюджет не может быть отрицательным' })
   @IsOptional()
   budget?: number;
+
+  @ApiPropertyOptional({ type: 'string', format: 'binary' })
+  poster?: any;
+
+  @ApiPropertyOptional({ type: 'string', format: 'binary' })
+  backdrop?: any;
 }

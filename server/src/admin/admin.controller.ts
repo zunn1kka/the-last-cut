@@ -81,23 +81,51 @@ export class AdminController {
 
   @Post('movies')
   @AdminOnly()
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'poster', maxCount: 1 },
+      { name: 'backdrop', maxCount: 1 },
+    ]),
+  )
   @ApiOperation({ summary: 'Создать новый фильм (только админ)' })
+  @ApiConsumes('multipart/form-data')
   async createMovie(
     @Body() dto: CreateMovieDto,
+    @UploadedFiles()
+    files: { poster?: Express.Multer.File[]; backdrop?: Express.Multer.File[] },
     @Authorized('id') userId: string,
   ) {
-    return this.adminService.createMovie(dto, userId);
+    const poster = files?.poster?.[0];
+    const backdrop = files?.backdrop?.[0];
+    return this.adminService.createMovie(dto, poster, backdrop, userId);
   }
 
   @Put('movies/:contentId')
   @AdminOnly()
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'poster', maxCount: 1 },
+      { name: 'backdrop', maxCount: 1 },
+    ]),
+  )
   @ApiOperation({ summary: 'Обновить информацию о фильме (только админ)' })
+  @ApiConsumes('multipart/form-data')
   async updateMovie(
     @Param('contentId') contentId: string,
     @Body() dto: UpdateMovieDto,
+    @UploadedFiles()
+    files: { poster?: Express.Multer.File[]; backdrop?: Express.Multer.File[] },
     @Authorized('id') userId: string,
   ) {
-    return this.adminService.updateMovie(contentId, dto, userId);
+    const poster = files?.poster?.[0];
+    const backdrop = files?.backdrop?.[0];
+    return this.adminService.updateMovie(
+      contentId,
+      dto,
+      poster,
+      backdrop,
+      userId,
+    );
   }
 
   @Delete('movies/:contentId')
@@ -114,25 +142,52 @@ export class AdminController {
 
   @Post('series')
   @AdminOnly()
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'poster', maxCount: 1 },
+      { name: 'backdrop', maxCount: 1 },
+    ]),
+  )
   @ApiOperation({ summary: 'Создать новый сериал (только админ)' })
+  @ApiConsumes('multipart/form-data')
   async createSeries(
     @Body() dto: CreateSeriesDto,
+    @UploadedFiles()
+    files: { poster?: Express.Multer.File[]; backdrop?: Express.Multer.File[] },
     @Authorized('id') userId: string,
   ) {
-    return this.adminService.createSeries(dto, userId);
+    const poster = files?.poster?.[0];
+    const backdrop = files?.backdrop?.[0];
+    return this.adminService.createSeries(dto, poster, backdrop, userId);
   }
 
   @Put('series/:contentId')
   @AdminOnly()
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'poster', maxCount: 1 },
+      { name: 'backdrop', maxCount: 1 },
+    ]),
+  )
   @ApiOperation({ summary: 'Обновить информацию о сериале (только админ)' })
+  @ApiConsumes('multipart/form-data')
   async updateSeries(
     @Param('contentId') contentId: string,
     @Body() dto: UpdateSeriesDto,
+    @UploadedFiles()
+    files: { poster?: Express.Multer.File[]; backdrop?: Express.Multer.File[] },
     @Authorized('id') userId: string,
   ) {
-    return this.adminService.updateSeries(contentId, dto, userId);
+    const poster = files?.poster?.[0];
+    const backdrop = files?.backdrop?.[0];
+    return this.adminService.updateSeries(
+      contentId,
+      dto,
+      poster,
+      backdrop,
+      userId,
+    );
   }
-
   @Delete('series/:contentId')
   @AdminOnly()
   @ApiOperation({ summary: 'Удалить сериал (только админ)' })

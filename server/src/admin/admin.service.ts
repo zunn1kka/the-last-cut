@@ -229,7 +229,14 @@ export class AdminService {
     });
   }
 
-  async createSeries(dto: CreateSeriesDto, userId: string) {
+  // ========== УПРАВЛЕНИЕ СЕРИАЛАМИ ==========
+
+  async createSeries(
+    dto: CreateSeriesDto,
+    posterFile: Express.Multer.File | undefined,
+    backdropFile: Express.Multer.File | undefined,
+    userId: string,
+  ) {
     const existingSeries = await this.prismaService.content.findFirst({
       where: {
         OR: [{ title: dto.title }, { originalTitle: dto.originalTitle }],
@@ -240,6 +247,26 @@ export class AdminService {
       throw new ConflictException('Такой сериал уже есть');
     }
 
+    // Сохраняем файлы, если они есть
+    let posterUrl = '';
+    let backdropUrl = null;
+
+    if (posterFile) {
+      const poster = await this.fileService.saveFile(
+        posterFile,
+        FileType.POSTER,
+      );
+      posterUrl = poster.url;
+    }
+
+    if (backdropFile) {
+      const backdrop = await this.fileService.saveFile(
+        backdropFile,
+        FileType.BACKDROP,
+      );
+      backdropUrl = backdrop.url;
+    }
+
     return this.prismaService.$transaction(async (tx) => {
       const content = await tx.content.create({
         data: {
@@ -247,8 +274,8 @@ export class AdminService {
           originalTitle: dto.originalTitle,
           description: dto.description || '',
           releaseYear: dto.releaseYear,
-          posterUrl: '',
-          backdropUrl: null,
+          posterUrl,
+          backdropUrl,
           imdbRating: dto.imdbRating,
           kinopoiskRating: dto.kinopoiskRating,
           ageRating: dto.ageRating,
@@ -276,7 +303,13 @@ export class AdminService {
     });
   }
 
-  async updateSeries(contentId: string, dto: UpdateSeriesDto, userId: string) {
+  async updateSeries(
+    contentId: string,
+    dto: UpdateSeriesDto,
+    posterFile: Express.Multer.File | undefined,
+    backdropFile: Express.Multer.File | undefined,
+    userId: string,
+  ) {
     return this.prismaService.$transaction(async (tx) => {
       const content = await tx.content.findUnique({
         where: { id: contentId, contentType: ContentType.SERIES },
@@ -287,6 +320,32 @@ export class AdminService {
         throw new NotFoundException('Сериал не найден');
       }
 
+      // Обрабатываем новые файлы
+      let posterUrl = content.posterUrl;
+      let backdropUrl = content.backdropUrl;
+
+      if (posterFile) {
+        if (posterUrl) {
+          await this.fileService.deleteFile(posterUrl);
+        }
+        const poster = await this.fileService.saveFile(
+          posterFile,
+          FileType.POSTER,
+        );
+        posterUrl = poster.url;
+      }
+
+      if (backdropFile) {
+        if (backdropUrl) {
+          await this.fileService.deleteFile(backdropUrl);
+        }
+        const backdrop = await this.fileService.saveFile(
+          backdropFile,
+          FileType.BACKDROP,
+        );
+        backdropUrl = backdrop.url;
+      }
+
       await tx.content.update({
         where: { id: contentId },
         data: {
@@ -294,6 +353,8 @@ export class AdminService {
           originalTitle: dto.originalTitle,
           description: dto.description,
           releaseYear: dto.releaseYear,
+          posterUrl,
+          backdropUrl,
           imdbRating: dto.imdbRating,
           kinopoiskRating: dto.kinopoiskRating,
           ageRating: dto.ageRating,

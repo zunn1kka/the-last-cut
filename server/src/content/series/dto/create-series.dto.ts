@@ -39,4 +39,10 @@ export class CreateSeriesDto extends CreateContentDto {
   @IsBoolean({ message: 'Флаг завершенности должен быть булевым значением' })
   @IsOptional()
   isCompleted?: boolean;
+
+  @ApiPropertyOptional({ type: 'string', format: 'binary' })
+  poster?: any;
+
+  @ApiPropertyOptional({ type: 'string', format: 'binary' })
+  backdrop?: any;
 }
