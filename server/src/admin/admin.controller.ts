@@ -67,7 +67,7 @@ export class AdminController {
   }
 
   @Delete('comments/:id')
-  @AdminOnly()
+  @AdminOrModerator()
   @ApiOperation({ summary: 'Удалить комментарий (только админ)' })
   @ApiParam({ name: 'id', description: 'UUID комментария' })
   async deleteComment(
