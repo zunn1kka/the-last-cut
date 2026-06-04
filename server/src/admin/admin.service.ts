@@ -720,25 +720,8 @@ export class AdminService {
     userId: string,
     personId: string,
     dto: UpdatePersonDto,
-    personPhoto: Express.Multer.File,
+    personPhoto: Express.Multer.File | undefined,
   ) {
-    const personAvatar = await this.prismaService.person.findUnique({
-      where: { id: personId },
-    });
-    let photoUrl: string | null = null;
-
-    if (personPhoto) {
-      if (personAvatar.photoUrl) {
-        await this.fileService.deleteFile(personAvatar.photoUrl);
-      }
-      const person = await this.fileService.saveFile(
-        personPhoto,
-        FileType.PERSON_PHOTO,
-      );
-
-      photoUrl = person.url;
-    }
-
     const existingPerson = await this.prismaService.person.findUnique({
       where: { id: personId },
     });
@@ -747,11 +730,25 @@ export class AdminService {
       throw new NotFoundException('Такого человека не существует');
     }
 
+    let photoUrl = existingPerson.photoUrl;
+
+    if (personPhoto) {
+      if (existingPerson.photoUrl) {
+        await this.fileService.deleteFile(existingPerson.photoUrl);
+      }
+
+      const savedPhoto = await this.fileService.saveFile(
+        personPhoto,
+        FileType.PERSON_PHOTO,
+      );
+      photoUrl = savedPhoto.url;
+    }
+
     const person = await this.prismaService.person.update({
       where: { id: personId },
       data: {
         fullname: dto.fullname,
-        photoUrl,
+        photoUrl: photoUrl, // сохраняем старое фото, если нет нового
         biography: dto.biography,
         birthDate: dto.birthDate,
         deathDate: dto.deathDate,
