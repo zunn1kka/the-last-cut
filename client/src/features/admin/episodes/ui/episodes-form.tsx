@@ -210,7 +210,7 @@ export function EpisodeForm({
 								setFormData({ ...formData, description: e.target.value })
 							}
 							rows={4}
-							className='w-full px-3 py-2 bg-custom-darker border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+							className='w-full px-3 py-2 bg-custom-darker border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-25'
 							placeholder='Краткое описание эпизода...'
 						/>
 					</div>
