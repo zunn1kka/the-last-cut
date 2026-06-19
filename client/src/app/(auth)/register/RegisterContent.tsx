@@ -198,6 +198,8 @@ export default function RegisterContent() {
 		}
 	}
 
+	// RegisterContent.tsx - измените handleSubmit
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 
@@ -230,8 +232,9 @@ export default function RegisterContent() {
 		setLoading(true)
 
 		try {
-			await authApi.register(formData, avatar || undefined)
-			// Просто переходим на страницу логина без параметров
+			const response = await authApi.register(formData, avatar || undefined)
+			console.log('✅ Registration response:', response)
+
 			window.location.href = '/login'
 		} catch (err: any) {
 			console.error('Registration error:', err)
@@ -246,7 +249,6 @@ export default function RegisterContent() {
 			setLoading(false)
 		}
 	}
-
 	const passwordStrength = getPasswordStrength(formData.password)
 
 	return (
