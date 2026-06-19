@@ -516,47 +516,55 @@ export default function MoviePage() {
 				</div>
 
 				{/* Актёры и создатели */}
-				{movie.persons && movie.persons.length > 0 && (
-					<div className='mt-12'>
-						<h2 className='text-xl font-semibold text-white mb-4 flex items-center gap-2'>
-							<User className='w-5 h-5 text-blue-400' />
-							Актёры и создатели
-						</h2>
-						<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4'>
-							{movie.persons.map(person => (
-								<Link
-									key={person.person.id}
-									href={`/actors/${person.person.id}`}
-									className='group bg-custom-dark rounded-xl overflow-hidden border border-gray-800 hover:border-blue-500 transition-all duration-300'
-								>
-									<div className='relative aspect-square overflow-hidden bg-custom-darker'>
-										{person.person.photoUrl ? (
-											<Image
-												src={getImageUrl(person.person.photoUrl)}
-												alt={person.person.fullname}
-												fill
-												className='object-cover group-hover:scale-105 transition-transform'
-												unoptimized={true}
-											/>
-										) : (
-											<div className='w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600'>
-												<User className='w-8 h-8 text-white/50' />
-											</div>
-										)}
-									</div>
-									<div className='p-3 text-center'>
-										<h4 className='font-semibold text-white text-sm line-clamp-1'>
-											{person.person.fullname}
-										</h4>
-										<p className='text-xs text-gray-500 mt-1'>
-											{person.roleName || person.role?.name || 'Актёр'}
-										</p>
-									</div>
-								</Link>
-							))}
+				{(() => {
+					// Фильтруем только валидные записи
+					const validPersons =
+						movie.persons?.filter(person => person?.person?.id) || []
+
+					if (validPersons.length === 0) return null
+
+					return (
+						<div className='mt-12'>
+							<h2 className='text-xl font-semibold text-white mb-4 flex items-center gap-2'>
+								<User className='w-5 h-5 text-blue-400' />
+								Актёры и создатели
+							</h2>
+							<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4'>
+								{validPersons.map(person => (
+									<Link
+										key={person.person.id}
+										href={`/actors/${person.person.id}`}
+										className='group bg-custom-dark rounded-xl overflow-hidden border border-gray-800 hover:border-blue-500 transition-all duration-300'
+									>
+										<div className='relative aspect-square overflow-hidden bg-custom-darker'>
+											{person.person.photoUrl ? (
+												<Image
+													src={getImageUrl(person.person.photoUrl)}
+													alt={person.person.fullname}
+													fill
+													className='object-cover group-hover:scale-105 transition-transform'
+													unoptimized={true}
+												/>
+											) : (
+												<div className='w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600'>
+													<User className='w-8 h-8 text-white/50' />
+												</div>
+											)}
+										</div>
+										<div className='p-3 text-center'>
+											<h4 className='font-semibold text-white text-sm line-clamp-1'>
+												{person.person.fullname || 'Неизвестный актёр'}
+											</h4>
+											<p className='text-xs text-gray-500 mt-1'>
+												{person.roleName || person.role?.name || 'Актёр'}
+											</p>
+										</div>
+									</Link>
+								))}
+							</div>
 						</div>
-					</div>
-				)}
+					)
+				})()}
 
 				{/* Комментарии */}
 				<div className='mt-12'>
