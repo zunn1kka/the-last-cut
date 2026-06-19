@@ -53,7 +53,6 @@ export class AuthService {
         avatar,
         FileType.AVATAR,
       );
-
       avatarUrl = saveAvatar.url;
     }
 
@@ -84,7 +83,11 @@ export class AuthService {
       user.username,
     );
 
-    return this.auth(res, user.id, false);
+    return {
+      success: true,
+      message: 'Регистрация успешна! Пожалуйста, подтвердите email и войдите.',
+      userId: user.id,
+    };
   }
 
   async login(res: Response, dto: LoginDto) {
